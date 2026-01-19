@@ -32,9 +32,7 @@ export default function HomePage() {
     setAddError(null);
 
     try {
-      await api.post('/users/me/courses', JSON.stringify({ courseId }), {
-        headers: { 'Content-Type': 'text/plain', },
-      });
+      await api.post('/users/me/courses', ({ courseId }));
 
       await mutateUser();
 
