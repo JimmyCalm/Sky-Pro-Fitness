@@ -37,7 +37,7 @@ export default function Header() {
             ) : (
               <li>
                 <Link href="/login">
-                  <button className="bg-lime text-primary px-6 py-3 rounded-full hover:opacity-90 transition-opacity">
+                  <button className="bg-[#BCEC30] text-primary px-6 py-3 rounded-full hover:opacity-90 transition-opacity">
                     Войти
                   </button>
                 </Link>

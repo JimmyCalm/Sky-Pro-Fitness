@@ -71,7 +71,7 @@ export default function RegisterPage() {
               transition-all duration-200
               ${isLoading 
                 ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-lime hover:bg-lime/90 active:bg-lime/80'}
+                : 'bg-[#BCEC30] hover:bg-[#BCEC30]/90 active:bg-[#BCEC30]/80'}
               text-primary
             `}
           >

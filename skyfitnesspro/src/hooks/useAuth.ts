@@ -57,7 +57,7 @@ export function useAuth() {
 
     try {
       const res = await api.post('/auth/login', { email, password }, {
-        headers: { 'Contente-Type': undefined },
+        headers: { 'Contente-Type': '', },
       });
       const { token } = res.data;
 
@@ -85,7 +85,7 @@ export function useAuth() {
 
     try {
       await api.post('/auth/register', { email, password }, {
-        headers: { 'Contente-Type': undefined },
+        headers: { 'Contente-Type': '', },
       });
       return await login(email, password);
     } catch (err: unknown) {

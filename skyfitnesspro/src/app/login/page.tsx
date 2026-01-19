@@ -33,7 +33,7 @@ export default function LoginPage() {
           className="w-full p-2 mb-4 border rounded"
         />
         {errors.password && <p className="text-red-500">{errors.password.message}</p>}
-        <button type="submit" disabled={isLoading} className="w-full bg-lime text-primary p-2 rounded">
+        <button type="submit" disabled={isLoading} className="w-full bg-[#BCEC30] text-primary p-2 rounded">
           {isLoading ? 'Загрузка...' : 'Войти'}
         </button>
         <p className="mt-4 text-center">
