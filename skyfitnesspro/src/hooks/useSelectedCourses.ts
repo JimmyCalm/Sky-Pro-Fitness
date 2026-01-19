@@ -6,7 +6,11 @@ import { Course, User } from '@/lib/types';
 import { getErrorMessage } from '@/lib/utils';
 
 const coursesFetcher = () => api.get('/courses').then(res => res.data);
-const userFetcher = () => api.get('/users/me').then(res => res.data);
+const userFetcher = () => api.get('/users/me').then(res => {
+  // Если данные обёрнуты в { user: {...} }, распаковываем их
+  const data = res.data;
+  return data.user ? data.user : data;
+});
 
 export function useSelectedCourses() {
   const {
@@ -22,19 +26,25 @@ export function useSelectedCourses() {
     data: user,
     error: userError,
     isLoading: userLoading,
-    mutate: mutateUser,           // ← этот mutate уже "привязан" к /users/me
+    mutate: mutateUser,
   } = useSWR<User>('/users/me', userFetcher, {
     revalidateOnFocus: false,
   });
 
-  const selectedCoursesData = user?.selectedCourses
-    ?.map(id => allCourses?.find(course => course._id === id))
-    .filter((course): course is Course => !!course);   // улучшенный filter с type guard
+  const selectedCourseIds = user?.selectedCourses || [];
+
+  let selectedCoursesData: Course[] = [];
+
+  if (selectedCourseIds.length > 0 && allCourses && allCourses.length > 0) {
+    selectedCoursesData = selectedCourseIds
+      .map((id: string) => allCourses.find(course => course._id === id))
+      .filter((course): course is Course => !!course);
+  }
 
   return {
-    selectedCourses: selectedCoursesData ?? [],
+    selectedCourses: selectedCoursesData,
     isLoading: coursesLoading || userLoading,
     error: coursesError || userError ? getErrorMessage(coursesError || userError) : null,
-    mutateUser,   // ← экспортируем
+    mutateUser,
   };
 }

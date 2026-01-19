@@ -6,17 +6,24 @@ import { cn } from '@/lib/utils';
 import api from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils';
 import { useState } from 'react';
-import { mutate } from 'swr';
+import useSWR from 'swr';
+import { User } from '@/lib/types';
 
 export default function HomePage() {
   const { courses, isLoading, error } = useCourses();
   const { isAuthenticated } = useAuthContext();
+  const { mutate: mutateUser } = useSWR<User>('/users/me', 
+    () => api.get('/users/me').then(res => {
+      const data = res.data;
+      return data.user ? data.user : data;
+    }),
+    { revalidateOnFocus: false }
+  );
   const [addingCourseId, setAddingCourseId] = useState<string | null>(null);
   const [addError, setAddError] = useState<string | null>(null);
 
   const handleSelectCourse = async (courseId: string) => {
     if (!isAuthenticated) {
-      // Можно перенаправить на логин или показать модалку
       alert('Войдите в аккаунт, чтобы выбрать курс');
       return;
     }
@@ -26,14 +33,12 @@ export default function HomePage() {
 
     try {
       await api.post('/users/me/courses', JSON.stringify({ courseId }), {
-        headers: { 'Content-Type': 'text/plain', }, // здесь json работает
+        headers: { 'Content-Type': 'text/plain', },
       });
 
-      await mutate('/users/me'); // обновляем данные пользователя после добавления курса
-      await mutate('/courses'); // обновляем данные курсов
+      await mutateUser();
 
       alert('Курс успешно добавлен в ваш профиль!');
-      // Опционально: обновить список курсов или показать уведомление
     } catch (err) {
       setAddError(getErrorMessage(err));
     } finally {

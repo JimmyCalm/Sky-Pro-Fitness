@@ -1,8 +1,13 @@
 import z from "zod";
 
 export interface User {
+  _id?: string;
   email: string;
   selectedCourses: string[];
+  password?: string;
+  courseProgress?: CourseProgress[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Course {
@@ -49,7 +54,10 @@ export const registerSchema = z.object({
   password: z.string()
     .min(6, "Пароль должен содержать не менее 6 символов")
     .regex(/[A-Z]/, "Пароль должен содержать как минимум одну заглавную букву")
-    .regex(/[^A-Za-z0-9]/g, { message: "Пароль должен содержать не менее 2 спецсимволов" }),
+    .refine(
+      (password) => (password.match(/[^A-Za-z0-9]/g) || []).length >= 2,
+      "Пароль должен содержать не менее 2 спецсимволов"
+    ),
 });
 
 export const loginSchema = registerSchema;
