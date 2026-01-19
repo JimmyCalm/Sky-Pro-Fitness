@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import api from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils';
 import { useState } from 'react';
+import { mutate } from 'swr';
 
 export default function HomePage() {
   const { courses, isLoading, error } = useCourses();
@@ -27,6 +28,10 @@ export default function HomePage() {
       await api.post('/users/me/courses', JSON.stringify({ courseId }), {
         headers: { 'Content-Type': 'text/plain', }, // здесь json работает
       });
+
+      await mutate('/users/me'); // обновляем данные пользователя после добавления курса
+      await mutate('/courses'); // обновляем данные курсов
+
       alert('Курс успешно добавлен в ваш профиль!');
       // Опционально: обновить список курсов или показать уведомление
     } catch (err) {
