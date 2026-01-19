@@ -9,6 +9,13 @@ api.interceptors.request.use((config) => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+    if (['post', 'put', 'patch'].includes(config.method?.toLowerCase() ?? '')) {
+    if (typeof config.data === 'object' && config.data !== null) {
+      config.data = JSON.stringify(config.data);
+    }
+    config.headers['Content-Type'] = 'text/plain';
+  }
     return config;
 });
 

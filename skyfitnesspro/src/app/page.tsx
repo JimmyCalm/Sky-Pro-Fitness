@@ -1,66 +1,128 @@
-import Image from 'next/image';
-import styles from './page.module.css';
+'use client';
 
-export default function Home() {
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useCourses } from '@/hooks/useCourses';
+import { cn } from '@/lib/utils';
+import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/utils';
+import { useState } from 'react';
+import useSWR from 'swr';
+import { User } from '@/lib/types';
+
+export default function HomePage() {
+  const { courses, isLoading, error } = useCourses();
+  const { isAuthenticated } = useAuthContext();
+  const { mutate: mutateUser } = useSWR<User>('/users/me', 
+    () => api.get('/users/me').then(res => {
+      const data = res.data;
+      return data.user ? data.user : data;
+    }),
+    { revalidateOnFocus: false }
+  );
+  const [addingCourseId, setAddingCourseId] = useState<string | null>(null);
+  const [addError, setAddError] = useState<string | null>(null);
+
+  const handleSelectCourse = async (courseId: string) => {
+    if (!isAuthenticated) {
+      alert('Войдите в аккаунт, чтобы выбрать курс');
+      return;
+    }
+
+    setAddingCourseId(courseId);
+    setAddError(null);
+
+    try {
+      await api.post('/users/me/courses', ({ courseId }));
+
+      await mutateUser();
+
+      alert('Курс успешно добавлен в ваш профиль!');
+    } catch (err) {
+      setAddError(getErrorMessage(err));
+    } finally {
+      setAddingCourseId(null);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <p className="text-xl">Загрузка курсов...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center text-red-600">
+        <p>Ошибка загрузки курсов: {error}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{' '}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{' '}
-            or the{' '}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{' '}
-            center.
-          </p>
+    <main className="py-12 px-4">
+      <h1 className="text-3xl md:text-4xl font-bold text-center mb-10">
+        Доступные курсы
+      </h1>
+
+      {addError && (
+        <div className="max-w-3xl mx-auto mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+          {addError}
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        {courses.map(course => (
+          <div
+            key={course._id}
+            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col"
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            <div className="p-6 flex-grow">
+              <h3 className="text-xl font-bold mb-3">{course.nameRU || course.nameEN}</h3>
+              <p className="text-gray-600 mb-4 line-clamp-3">{course.description}</p>
+
+              <div className="flex flex-wrap gap-2 mb-4">
+                {course.directions?.map((dir, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-block px-3 py-1 bg-lime/20 text-lime-800 text-sm rounded-full"
+                  >
+                    {dir}
+                  </span>
+                ))}
+              </div>
+
+              {course.difficulty && (
+                <p className="text-sm text-gray-500">
+                  Сложность: <span className="font-medium">{course.difficulty}</span>
+                </p>
+              )}
+            </div>
+
+            <div className="p-6 pt-0 mt-auto">
+              <button
+                onClick={() => handleSelectCourse(course._id)}
+                disabled={addingCourseId === course._id}
+                className={cn(
+                  "w-full py-3 rounded-full font-medium transition-all",
+                  addingCourseId === course._id
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-lime hover:bg-lime/90 active:bg-lime/80 text-primary"
+                )}
+              >
+                {addingCourseId === course._id ? 'Добавляем...' : 'Выбрать курс'}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {courses.length === 0 && !isLoading && (
+        <p className="text-center text-gray-500 text-xl mt-12">
+          Курсы пока отсутствуют
+        </p>
+      )}
+    </main>
   );
 }
