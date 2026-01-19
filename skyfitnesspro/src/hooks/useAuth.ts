@@ -56,7 +56,9 @@ export function useAuth() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const res = await api.post('/auth/login', { email, password });
+      const res = await api.post('/auth/login', JSON.stringify({ email, password }), {
+        headers: { 'Content-Type': 'text/plain', },
+      });
       const { token } = res.data;
 
       localStorage.setItem('token', token);
@@ -82,7 +84,9 @@ export function useAuth() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      await api.post('/auth/register', { email, password });
+      await api.post('/auth/register', JSON.stringify({ email, password }), {
+        headers: { 'Content-Type': 'text/plain', },
+      });
       return await login(email, password);
     } catch (err: unknown) {
       const message = getErrorMessage(err);
