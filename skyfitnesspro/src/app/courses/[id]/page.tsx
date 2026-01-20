@@ -24,7 +24,7 @@ export default function CourseDetailPage() {
     error,
   } = useCourseDetail(courseId);
 
-  const { isAuthenticated, isLoading: authLoading } = useAuthContext();
+  const { isLoading: authLoading } = useAuthContext();
 
   if (authLoading || isLoading) {
     return (
@@ -172,7 +172,7 @@ export default function CourseDetailPage() {
                 </p>
 
                 <Link
-                  href={`/workouts/${workout._id}`}
+                  href={`/workouts/${workout._id}?courseId=${course._id}`}
                   className="inline-block px-6 py-2 bg-primary border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"
                 >
                   {isCompleted ? 'Повторить' : 'Начать'} тренировку
