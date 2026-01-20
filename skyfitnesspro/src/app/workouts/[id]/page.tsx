@@ -13,7 +13,7 @@ export default function WorkoutPage() {
   const router = useRouter();
 
   const workoutId = params.id as string;
-  const courseId = searchParams.get('courseId') ?? undefined; // courseId должен приходить из URL
+  const courseId = searchParams.get('courseId') ?? undefined;
 
   const { workout, progress, isLoading, error, updateProgress } = useWorkoutDetail(workoutId, courseId);
 
