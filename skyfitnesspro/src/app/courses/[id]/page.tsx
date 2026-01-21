@@ -49,24 +49,27 @@ export default function CourseDetailPage() {
     );
   }
 
+  console.log('Загруженные тренировки workouts:', workouts); // ← вот сюда
+  console.log('Порядок ID из course.workouts:', course.workouts);
+
   const firstWorkout = workouts?.[0];
   const firstWorkoutId = firstWorkout?._id;
 
   const getNextWorkoutId = () => {
-  if (!workouts || workouts.length === 0) return null;
+    if (!workouts || workouts.length === 0) return null;
 
-  for (const w of workouts) {
-    const wp = progress?.workoutsProgress?.find(
-      (p: WorkoutProgress) => p.workoutId === w._id
-    );
-    if (!wp?.workoutCompleted) {
-      return w._id;
+    for (const w of workouts) {
+      const wp = progress?.workoutsProgress?.find(
+        (p: WorkoutProgress) => p.workoutId === w._id
+      );
+      if (!wp?.workoutCompleted) {
+        return w._id;
+      }
     }
-  }
 
-  // Если все завершены — возвращаем первую
-  return workouts[0]?._id ?? null;
-};
+    // Если все завершены — возвращаем первую
+    return workouts[0]?._id ?? null;
+  };
 
   const nextWorkoutId = getNextWorkoutId();
 
