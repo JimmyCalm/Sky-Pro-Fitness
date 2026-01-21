@@ -14,7 +14,7 @@ const progressFetcher = (courseIds: string[]) => {
       api
         .get(`/users/me/progress?courseId=${courseId}`)
         .then(res => res.data)
-        .catch(() => null) // если ошибка по одному курсу — не ломаем весь запрос
+        .catch(() => null)
     )
   );
 };
