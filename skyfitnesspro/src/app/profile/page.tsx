@@ -2,12 +2,16 @@
 
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useSelectedCourses } from '@/hooks/useSelectedCourses';
+import { useProgress } from '@/hooks/useProgress';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import ProgressBar from '@/components/ProgressBar';
 import Link from 'next/link';
 
 export default function ProfilePage() {
   const { user: authUser, isLoading: authLoading } = useAuthContext();
-  const { selectedCourses, isLoading, error, mutateUser } = useSelectedCourses();
+  const { selectedCourses, isLoading, error, mutateUser } =
+    useSelectedCourses();
+  const { courseProgress } = useProgress();
 
   if (authLoading || isLoading) {
     return (
@@ -41,7 +45,11 @@ export default function ProfilePage() {
             Личный кабинет
           </h1>
           <p className="text-lg text-gray-600">
-            Добро пожаловать, <span className="font-medium">{displayUser?.email || 'пользователь'}</span>!
+            Добро пожаловать,{' '}
+            <span className="font-medium">
+              {displayUser?.email || 'пользователь'}
+            </span>
+            !
           </p>
         </div>
 
@@ -62,55 +70,80 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {selectedCourses.map(course => (
-                <div
-                  key={course._id}
-                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
-                >
-                  <div className="p-6 flex-grow">
-                    <h3 className="text-xl font-bold mb-3">
-                      {course.nameRU || course.nameEN || 'Без названия'}
-                    </h3>
+              {selectedCourses.map((course) => {
+                // Находим прогресс для текущего курса
+                const courseProgressData = courseProgress.find(
+                  (cp) => cp.courseId === course._id
+                );
+                const courseCompletedWorkouts =
+                  courseProgressData?.workoutsProgress?.filter(
+                    (wp) => wp.workoutCompleted
+                  ).length || 0;
+                const courseTotalWorkouts = course.workouts?.length || 0;
+                const courseProgressPercent =
+                  courseTotalWorkouts > 0
+                    ? Math.round(
+                        (courseCompletedWorkouts / courseTotalWorkouts) * 100
+                      )
+                    : 0;
 
-                    <p className="text-gray-600 mb-4 line-clamp-3">
-                      {course.description || 'Описание отсутствует'}
-                    </p>
+                return (
+                  <div
+                    key={course._id}
+                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
+                  >
+                    <div className="p-6 grow">
+                      <h3 className="text-xl font-bold mb-3">
+                        {course.nameRU || course.nameEN || 'Без названия'}
+                      </h3>
 
-                    {course.directions?.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {course.directions.map((dir, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1 bg-lime/20 text-lime-800 text-xs rounded-full"
-                          >
-                            {dir}
+                      <p className="text-gray-600 mb-4 line-clamp-3">
+                        {course.description || 'Описание отсутствует'}
+                      </p>
+
+                      {course.directions?.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {course.directions.map((dir, idx) => (
+                            <span
+                              key={idx}
+                              className="px-3 py-1 bg-lime/20 text-lime-800 text-xs rounded-full"
+                            >
+                              {dir}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Прогресс пока placeholder — добавим позже */}
+                      <div className="mt-4">
+                        <div className="flex justify-between text-sm text-gray-600 mb-1">
+                          <span>Прогресс</span>
+                          <span>
+                            {courseCompletedWorkouts} / {courseTotalWorkouts}{' '}
+                            тренировок
                           </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Прогресс пока placeholder — добавим позже */}
-                    <div className="mt-4">
-                      <div className="flex justify-between text-sm text-gray-600 mb-1">
-                        <span>Прогресс</span>
-                        <span>0 / ? тренировок</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-lime h-2 rounded-full w-0" />
+                        </div>
+                        <ProgressBar
+                          current={courseCompletedWorkouts}
+                          total={courseTotalWorkouts || 1}
+                          percentage={courseProgressPercent}
+                          showLabel={false}
+                          height="md"
+                        />
                       </div>
                     </div>
-                  </div>
 
-                  <div className="px-6 pb-6 mt-auto">
-                    <Link
-                      href={`/courses/${course._id}`}
-                      className="block w-full text-center py-3 bg-primary border border-gray-300 rounded-full hover:bg-gray-50 transition-colors font-medium"
-                    >
-                      Перейти к курсу
-                    </Link>
+                    <div className="px-6 pb-6 mt-auto">
+                      <Link
+                        href={`/courses/${course._id}`}
+                        className="block w-full text-center py-3 bg-primary border border-gray-300 rounded-full hover:bg-gray-50 transition-colors font-medium"
+                      >
+                        Перейти к курсу
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>

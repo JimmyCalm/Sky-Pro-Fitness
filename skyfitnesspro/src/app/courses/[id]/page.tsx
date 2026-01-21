@@ -3,6 +3,7 @@
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useCourseDetail } from '@/hooks/useCourseDetail';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import ProgressBar from '@/components/ProgressBar';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -111,20 +112,21 @@ export default function CourseDetailPage() {
           </div>
 
           {/* Прогресс курса */}
-          <div className="mb-8">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="font-medium">Прогресс курса</span>
-              <span>
+          <div className="mb-8 bg-gradient-to-r from-lime/10 to-lime/5 rounded-lg p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-lg">Прогресс курса</h3>
+              <span className="text-sm font-medium text-gray-700">
                 {completedWorkouts}/{totalWorkouts} тренировок •{' '}
                 {progressPercent}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div
-                className="bg-lime h-3 rounded-full transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
+            <ProgressBar
+              current={completedWorkouts}
+              total={totalWorkouts}
+              percentage={progressPercent}
+              showLabel={false}
+              height="lg"
+            />
           </div>
 
           <button
