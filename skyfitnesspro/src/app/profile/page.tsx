@@ -1,19 +1,42 @@
 'use client';
 
+import { useState } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useSelectedCourses } from '@/hooks/useSelectedCourses';
 import { useProgress } from '@/hooks/useProgress';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ProgressBar from '@/components/ProgressBar';
+import DeleteCourseModal from '@/components/DeleteCourseModal';
 import Link from 'next/link';
+import api from '@/lib/api';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function ProfilePage() {
   const { user: authUser, isLoading: authLoading } = useAuthContext();
   const { selectedCourses, isLoading: coursesLoading, error: coursesError, mutateUser } = useSelectedCourses();
-  const { courseProgress, isLoading: progressLoading, error: progressError } = useProgress();
+  const { courseProgress, isLoading: progressLoading, error: progressError, mutateProgress } = useProgress();
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const isLoading = authLoading || coursesLoading || progressLoading;
   const error = coursesError || progressError;
+
+  const handleDeleteCourse = async () => {
+    if (!courseToDelete) return;
+
+    try {
+      await api.delete(`/users/me/courses/${courseToDelete.id}`);
+      await mutateUser(); // обновляем список курсов
+      await mutateProgress(); // обновляем прогресс (если нужно)
+      alert('Курс успешно удалён!');
+    } catch (err) {
+      alert(`Ошибка удаления: ${getErrorMessage(err)}`);
+    } finally {
+      setCourseToDelete(null);
+      setDeleteModalOpen(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -106,13 +129,26 @@ export default function ProfilePage() {
                       />
                     </div>
 
-                    <div className="px-6 pb-6 mt-auto">
+                    <div className="px-6 pb-6 mt-auto flex gap-3">
                       <Link
                         href={`/courses/${course._id}`}
-                        className="block w-full text-center py-3 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors font-medium"
+                        className="flex-1 text-center py-3 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors font-medium"
                       >
                         Перейти к курсу
                       </Link>
+
+                      <button
+                        onClick={() => {
+                          setCourseToDelete({
+                            id: course._id,
+                            name: course.nameRU || course.nameEN || 'Курс',
+                          });
+                          setDeleteModalOpen(true);
+                        }}
+                        className="px-4 py-3 bg-red-100 text-red-700 rounded-full hover:bg-red-200 transition-colors font-medium"
+                      >
+                        Удалить
+                      </button>
                     </div>
                   </div>
                 );
@@ -120,6 +156,19 @@ export default function ProfilePage() {
             </div>
           )}
         </section>
+
+        {/* Модалка подтверждения удаления */}
+        {courseToDelete && (
+          <DeleteCourseModal
+            isOpen={deleteModalOpen}
+            onClose={() => {
+              setDeleteModalOpen(false);
+              setCourseToDelete(null);
+            }}
+            onConfirm={handleDeleteCourse}
+            courseName={courseToDelete.name}
+          />
+        )}
       </main>
     </ProtectedRoute>
   );
