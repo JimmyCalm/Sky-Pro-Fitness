@@ -49,7 +49,26 @@ export default function CourseDetailPage() {
     );
   }
 
-  const firstWorkoutId = workouts?.[0]?._id;
+  const firstWorkout = workouts?.[0];
+  const firstWorkoutId = firstWorkout?._id;
+
+  const getNextWorkoutId = () => {
+  if (!workouts || workouts.length === 0) return null;
+
+  for (const w of workouts) {
+    const wp = progress?.workoutsProgress?.find(
+      (p: WorkoutProgress) => p.workoutId === w._id
+    );
+    if (!wp?.workoutCompleted) {
+      return w._id;
+    }
+  }
+
+  // Если все завершены — возвращаем первую
+  return workouts[0]?._id ?? null;
+};
+
+  const nextWorkoutId = getNextWorkoutId();
 
   return (
     <ProtectedRoute>
@@ -131,10 +150,10 @@ export default function CourseDetailPage() {
 
           <button
             onClick={() =>
-              firstWorkoutId &&
-              router.push(`/workouts/${firstWorkoutId}?courseId=${courseId}`)
+              nextWorkoutId &&
+              router.push(`/workouts/${nextWorkoutId}?courseId=${courseId}`)
             }
-            disabled={!firstWorkoutId || isLoading}
+            disabled={!nextWorkoutId || isLoading}
             className={cn(
               'w-full md:w-auto px-10 py-4 rounded-full font-medium text-lg transition-all',
               firstWorkoutId && !isLoading
