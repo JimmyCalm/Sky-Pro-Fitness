@@ -7,6 +7,7 @@ import { useProgress } from '@/hooks/useProgress';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ProgressBar from '@/components/ProgressBar';
 import DeleteCourseModal from '@/components/DeleteCourseModal';
+import ResetProgressModal from '@/components/ResetProgressModal'; // ← новый модал
 import Link from 'next/link';
 import api from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils';
@@ -17,19 +18,23 @@ export default function ProfilePage() {
   const { selectedCourses, isLoading: coursesLoading, error: coursesError, mutateUser } = useSelectedCourses();
   const { courseProgress, isLoading: progressLoading, error: progressError, mutateProgress } = useProgress();
 
+  // Для удаления курса
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  const isLoading = authLoading || coursesLoading || progressLoading;
-  const error = coursesError || progressError;
+  // Для сброса прогресса
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [courseToReset, setCourseToReset] = useState<{ id: string; name: string } | null>(null);
+
+  const isLoadingOverall = authLoading || coursesLoading || progressLoading;
+  const errorOverall = coursesError || progressError;
 
   const handleDeleteCourse = async () => {
     if (!courseToDelete) return;
 
     try {
       await api.delete(`/users/me/courses/${courseToDelete.id}`);
-      await mutateUser(); // обновляем список курсов
-      await mutateProgress(); // обновляем прогресс (если нужно)
+      await mutateUser();
       toast.success('Курс успешно удалён!');
     } catch (err) {
       toast.error(`Ошибка удаления: ${getErrorMessage(err)}`);
@@ -39,7 +44,23 @@ export default function ProfilePage() {
     }
   };
 
-  if (isLoading) {
+  const handleResetProgress = async () => {
+    if (!courseToReset) return;
+
+    try {
+      await api.patch(`/courses/${courseToReset.id}/reset`);
+      await mutateProgress(); // обновляем прогресс
+      await mutateUser();     // обновляем пользователя (на всякий случай)
+      toast.success('Прогресс курса успешно сброшен!');
+    } catch (err) {
+      toast.error(`Ошибка сброса прогресса: ${getErrorMessage(err)}`);
+    } finally {
+      setCourseToReset(null);
+      setResetModalOpen(false);
+    }
+  };
+
+  if (isLoadingOverall) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
         <p className="text-xl text-gray-600">Загрузка профиля...</p>
@@ -47,10 +68,10 @@ export default function ProfilePage() {
     );
   }
 
-  if (error) {
+  if (errorOverall) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center text-red-600 gap-4">
-        <p>Ошибка загрузки данных: {error}</p>
+        <p>Ошибка загрузки данных: {errorOverall}</p>
         <button
           onClick={() => mutateUser()}
           className="px-6 py-2 bg-[#00C1FF] text-white rounded-full hover:bg-[#00A1E0]"
@@ -150,6 +171,19 @@ export default function ProfilePage() {
                       >
                         Удалить
                       </button>
+
+                      <button
+                        onClick={() => {
+                          setCourseToReset({
+                            id: course._id,
+                            name: course.nameRU || course.nameEN || 'Курс',
+                          });
+                          setResetModalOpen(true);
+                        }}
+                        className="px-4 py-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition-colors font-medium"
+                      >
+                        Сбросить прогресс
+                      </button>
                     </div>
                   </div>
                 );
@@ -158,7 +192,7 @@ export default function ProfilePage() {
           )}
         </section>
 
-        {/* Модалка подтверждения удаления */}
+        {/* Модалка удаления курса */}
         {courseToDelete && (
           <DeleteCourseModal
             isOpen={deleteModalOpen}
@@ -168,6 +202,19 @@ export default function ProfilePage() {
             }}
             onConfirm={handleDeleteCourse}
             courseName={courseToDelete.name}
+          />
+        )}
+
+        {/* Модалка сброса прогресса */}
+        {courseToReset && (
+          <ResetProgressModal
+            isOpen={resetModalOpen}
+            onClose={() => {
+              setResetModalOpen(false);
+              setCourseToReset(null);
+            }}
+            onConfirm={handleResetProgress}
+            courseName={courseToReset.name}
           />
         )}
       </main>
