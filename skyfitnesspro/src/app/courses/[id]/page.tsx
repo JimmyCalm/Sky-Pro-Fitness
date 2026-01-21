@@ -49,14 +49,6 @@ export default function CourseDetailPage() {
     );
   }
 
-  const sortedWorkouts =
-    workouts?.slice().sort((a, b) => {
-      const indexA = course.workouts?.indexOf(a._id) ?? -1;
-      const indexB = course.workouts?.indexOf(b._id) ?? -1;
-      return indexA - indexB;
-    }) ?? [];
-
-  const firstWorkoutId = sortedWorkouts[0]?._id;
 
   const getNextWorkoutId = () => {
     if (!workouts || workouts.length === 0) return null;
