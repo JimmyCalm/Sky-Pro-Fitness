@@ -49,15 +49,19 @@ export default function CourseDetailPage() {
     );
   }
 
-  console.log('Загруженные тренировки workouts:', workouts); // ← вот сюда
-  console.log('Порядок ID из course.workouts:', course.workouts);
+  const sortedWorkouts =
+    workouts?.slice().sort((a, b) => {
+      const indexA = course.workouts?.indexOf(a._id) ?? -1;
+      const indexB = course.workouts?.indexOf(b._id) ?? -1;
+      return indexA - indexB;
+    }) ?? [];
 
-  const firstWorkout = workouts?.[0];
-  const firstWorkoutId = firstWorkout?._id;
+  const firstWorkoutId = sortedWorkouts[0]?._id;
 
   const getNextWorkoutId = () => {
     if (!workouts || workouts.length === 0) return null;
 
+    // Ищем первую незавершённую тренировку
     for (const w of workouts) {
       const wp = progress?.workoutsProgress?.find(
         (p: WorkoutProgress) => p.workoutId === w._id
@@ -159,8 +163,8 @@ export default function CourseDetailPage() {
             disabled={!nextWorkoutId || isLoading}
             className={cn(
               'w-full md:w-auto px-10 py-4 rounded-full font-medium text-lg transition-all',
-              firstWorkoutId && !isLoading
-                ? 'bg-[#00C1FF] hover:bg-[#00A1E0] text-white'
+              nextWorkoutId && !isLoading
+                ? 'bg-[#00C1FF] hover:bg-[#00A1E0] text-white active:bg-[#0088CC]'
                 : 'bg-gray-300 cursor-not-allowed text-gray-600'
             )}
           >
