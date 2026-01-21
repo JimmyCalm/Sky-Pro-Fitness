@@ -49,12 +49,19 @@ export default function CourseDetailPage() {
     );
   }
 
+  // Сначала сортируем тренировки по порядку в course.workouts
+  const sortedWorkouts =
+    workouts?.slice().sort((a, b) => {
+      const indexA = course.workouts?.indexOf(a._id) ?? Number.MAX_SAFE_INTEGER;
+      const indexB = course.workouts?.indexOf(b._id) ?? Number.MAX_SAFE_INTEGER;
+      return indexA - indexB;
+    }) ?? [];
 
+  // Теперь ищем следующую незавершённую в отсортированном массиве
   const getNextWorkoutId = () => {
-    if (!workouts || workouts.length === 0) return null;
+    if (sortedWorkouts.length === 0) return null;
 
-    // Ищем первую незавершённую тренировку
-    for (const w of workouts) {
+    for (const w of sortedWorkouts) {
       const wp = progress?.workoutsProgress?.find(
         (p: WorkoutProgress) => p.workoutId === w._id
       );
@@ -63,8 +70,8 @@ export default function CourseDetailPage() {
       }
     }
 
-    // Если все завершены — возвращаем первую
-    return workouts[0]?._id ?? null;
+    // Если все завершены — возвращаем первую по порядку курса
+    return sortedWorkouts[0]?._id ?? null;
   };
 
   const nextWorkoutId = getNextWorkoutId();
