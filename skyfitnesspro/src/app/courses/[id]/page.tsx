@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { WorkoutProgress } from '@/lib/types';
 import api from '@/lib/api';
-import { useState } from 'react';
+import { getErrorMessage } from '@/lib/utils'; // ← добавь импорт
 
 export default function CourseDetailPage() {
   const params = useParams();
@@ -29,19 +29,15 @@ export default function CourseDetailPage() {
 
   const { isAuthenticated } = useAuthContext();
 
-  const [adding, setAdding] = useState(false);
-
-  // Курс считается добавленным, если progress загружен (только для авторизованных)
+  // Курс добавлен, если progress загружен
   const isAdded = isAuthenticated && progress !== undefined;
 
-  // Сортируем тренировки по порядку из course.workouts
+  // Сортируем тренировки по порядку в course.workouts
   const sortedWorkouts = workouts?.slice().sort((a, b) => {
     const indexA = course?.workouts?.indexOf(a._id) ?? Number.MAX_SAFE_INTEGER;
     const indexB = course?.workouts?.indexOf(b._id) ?? Number.MAX_SAFE_INTEGER;
     return indexA - indexB;
   }) ?? [];
-
-  const firstWorkoutId = sortedWorkouts[0]?._id;
 
   const nextWorkoutId = (() => {
     if (sortedWorkouts.length === 0) return null;
@@ -63,15 +59,12 @@ export default function CourseDetailPage() {
       return;
     }
 
-    setAdding(true);
     try {
       await api.post('/users/me/courses', { courseId });
-      toast.success('Курс добавлен в ваш профиль!');
+      toast.success('Курс добавлен!');
       router.refresh();
     } catch (err) {
-      toast.error('Не удалось добавить курс');
-    } finally {
-      setAdding(false);
+      toast.error(getErrorMessage(err));
     }
   };
 
@@ -149,7 +142,7 @@ export default function CourseDetailPage() {
             )}
           </div>
 
-          {/* Прогресс — ТОЛЬКО для авторизованных и добавленных */}
+          {/* Прогресс — только для авторизованных и добавленных */}
           {isAuthenticated && isAdded && (
             <div className="mb-10 bg-gradient-to-r from-[#00C1FF]/5 to-[#00C1FF]/10 rounded-xl p-6">
               <div className="flex justify-between items-center mb-4">
@@ -187,15 +180,9 @@ export default function CourseDetailPage() {
               ) : (
                 <button
                   onClick={handleAddCourse}
-                  disabled={adding}
-                  className={cn(
-                    'flex-1 py-4 rounded-full font-medium text-lg transition-all shadow-md',
-                    adding
-                      ? 'bg-gray-400 cursor-not-allowed text-white'
-                      : 'bg-[#00C1FF] hover:bg-[#00A1E0] text-white active:bg-[#0088CC]'
-                  )}
+                  className="flex-1 py-4 rounded-full font-medium text-lg transition-all shadow-md bg-[#00C1FF] hover:bg-[#00A1E0] text-white active:bg-[#0088CC]"
                 >
-                  {adding ? 'Добавляем...' : 'Добавить курс'}
+                  Добавить курс
                 </button>
               )
             ) : (
@@ -209,7 +196,7 @@ export default function CourseDetailPage() {
           </div>
         </div>
 
-        {/* Список тренировок — доступен ВСЕМ */}
+        {/* Список тренировок */}
         <h2 className="text-2xl font-semibold mb-6">Тренировки в курсе</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
