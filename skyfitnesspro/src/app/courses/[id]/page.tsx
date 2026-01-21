@@ -3,6 +3,7 @@
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useCourseDetail } from '@/hooks/useCourseDetail';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import ProgressBar from '@/components/ProgressBar';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -48,7 +49,32 @@ export default function CourseDetailPage() {
     );
   }
 
-  const firstWorkoutId = workouts[0]?._id || course.workouts?.[0];
+  // Сначала сортируем тренировки по порядку в course.workouts
+  const sortedWorkouts =
+    workouts?.slice().sort((a, b) => {
+      const indexA = course.workouts?.indexOf(a._id) ?? Number.MAX_SAFE_INTEGER;
+      const indexB = course.workouts?.indexOf(b._id) ?? Number.MAX_SAFE_INTEGER;
+      return indexA - indexB;
+    }) ?? [];
+
+  // Теперь ищем следующую незавершённую в отсортированном массиве
+  const getNextWorkoutId = () => {
+    if (sortedWorkouts.length === 0) return null;
+
+    for (const w of sortedWorkouts) {
+      const wp = progress?.workoutsProgress?.find(
+        (p: WorkoutProgress) => p.workoutId === w._id
+      );
+      if (!wp?.workoutCompleted) {
+        return w._id;
+      }
+    }
+
+    // Если все завершены — возвращаем первую по порядку курса
+    return sortedWorkouts[0]?._id ?? null;
+  };
+
+  const nextWorkoutId = getNextWorkoutId();
 
   return (
     <ProtectedRoute>
@@ -111,35 +137,37 @@ export default function CourseDetailPage() {
           </div>
 
           {/* Прогресс курса */}
-          <div className="mb-8">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="font-medium">Прогресс курса</span>
-              <span>
+          <div className="mb-8 bg-gradient-to-r from-lime/10 to-lime/5 rounded-lg p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-lg">Прогресс курса</h3>
+              <span className="text-sm font-medium text-gray-700">
                 {completedWorkouts}/{totalWorkouts} тренировок •{' '}
                 {progressPercent}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div
-                className="bg-lime h-3 rounded-full transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
+            <ProgressBar
+              current={completedWorkouts}
+              total={totalWorkouts}
+              percentage={progressPercent}
+              showLabel={false}
+              height="lg"
+            />
           </div>
 
           <button
             onClick={() =>
-              firstWorkoutId && router.push(`/workouts/${firstWorkoutId}`)
+              nextWorkoutId &&
+              router.push(`/workouts/${nextWorkoutId}?courseId=${courseId}`)
             }
-            disabled={!firstWorkoutId}
+            disabled={!nextWorkoutId || isLoading}
             className={cn(
-              'w-full md:w-auto px-10 py-4 rounded-full font-medium text-lg',
-              firstWorkoutId
-                ? 'bg-lime hover:bg-lime/90 text-primary'
+              'w-full md:w-auto px-10 py-4 rounded-full font-medium text-lg transition-all',
+              nextWorkoutId && !isLoading
+                ? 'bg-[#00C1FF] hover:bg-[#00A1E0] text-white active:bg-[#0088CC]'
                 : 'bg-gray-300 cursor-not-allowed text-gray-600'
             )}
           >
-            {completedWorkouts > 0 ? 'Продолжить' : 'Начать курс'}
+            {completedWorkouts > 0 ? 'Продолжить курс' : 'Начать курс'}
           </button>
         </div>
 
