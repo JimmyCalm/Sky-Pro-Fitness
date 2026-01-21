@@ -9,19 +9,25 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import { User } from '@/lib/types';
 import toast from 'react-hot-toast';
+import Link from 'next/link';
 
 export default function HomePage() {
   const { courses, isLoading, error } = useCourses();
   const { isAuthenticated } = useAuthContext();
-  const { mutate: mutateUser } = useSWR<User>('/users/me', 
+
+  // Проверяем токен перед запросом /users/me
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+  const { mutate: mutateUser } = useSWR<User>(
+    token ? '/users/me' : null, // ← только если есть токен
     () => api.get('/users/me').then(res => {
       const data = res.data;
       return data.user ? data.user : data;
     }),
     { revalidateOnFocus: false }
   );
+
   const [addingCourseId, setAddingCourseId] = useState<string | null>(null);
-  const [addError, setAddError] = useState<string | null>(null);
 
   const handleSelectCourse = async (courseId: string) => {
     if (!isAuthenticated) {
@@ -30,16 +36,13 @@ export default function HomePage() {
     }
 
     setAddingCourseId(courseId);
-    setAddError(null);
 
     try {
-      await api.post('/users/me/courses', ({ courseId }));
-
-      await mutateUser();
-
+      await api.post('/users/me/courses', { courseId });
+      await mutateUser?.(); // безопасно, если mutateUser существует
       toast.success('Курс успешно добавлен в ваш профиль!');
     } catch (err) {
-      setAddError(getErrorMessage(err));
+      toast.error(getErrorMessage(err));
     } finally {
       setAddingCourseId(null);
     }
@@ -67,17 +70,12 @@ export default function HomePage() {
         Доступные курсы
       </h1>
 
-      {addError && (
-        <div className="max-w-3xl mx-auto mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-          {addError}
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
         {courses.map(course => (
-          <div
+          <Link
             key={course._id}
-            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col"
+            href={`/courses/${course._id}`}
+            className="block bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
           >
             <div className="p-6 flex-grow">
               <h3 className="text-xl font-bold mb-3">{course.nameRU || course.nameEN}</h3>
@@ -103,7 +101,11 @@ export default function HomePage() {
 
             <div className="p-6 pt-0 mt-auto">
               <button
-                onClick={() => handleSelectCourse(course._id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSelectCourse(course._id);
+                }}
                 disabled={addingCourseId === course._id}
                 className={cn(
                   "w-full py-3 rounded-full font-medium transition-all",
@@ -115,7 +117,7 @@ export default function HomePage() {
                 {addingCourseId === course._id ? 'Добавляем...' : 'Выбрать курс'}
               </button>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 

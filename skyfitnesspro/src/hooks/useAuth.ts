@@ -25,7 +25,12 @@ export function useAuth() {
     const loadUser = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
-        setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false }));
+        setState({
+          user: null,
+          isLoading: false,
+          error: null,
+          isAuthenticated: false,
+        });
         return;
       }
 
