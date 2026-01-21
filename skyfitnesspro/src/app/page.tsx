@@ -10,20 +10,23 @@ import useSWR from 'swr';
 import { User } from '@/lib/types';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function HomePage() {
   const { courses, isLoading, error } = useCourses();
   const { isAuthenticated } = useAuthContext();
 
   // Проверяем токен перед запросом /users/me
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const { mutate: mutateUser } = useSWR<User>(
     token ? '/users/me' : null, // ← только если есть токен
-    () => api.get('/users/me').then(res => {
-      const data = res.data;
-      return data.user ? data.user : data;
-    }),
+    () =>
+      api.get('/users/me').then((res) => {
+        const data = res.data;
+        return data.user ? data.user : data;
+      }),
     { revalidateOnFocus: false }
   );
 
@@ -66,26 +69,53 @@ export default function HomePage() {
 
   return (
     <main className="py-12 px-4">
-      <h1 className="text-3xl md:text-4xl font-bold text-center mb-10">
-        Доступные курсы
+      <div className=" flex mb-10">
+        <h1 className="text-[black] md:text-[60px] font-medium text-start mb-10">
+        Начните заниматься спортом и улучшите качество жизни
       </h1>
+      <Image
+          src="/banner.png"
+          alt="Баннер"
+          width={288}
+          height={120}
+          className="mt-4 rounded-xl"
+        />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {courses.map(course => (
+        {courses.map((course) => (
           <Link
             key={course._id}
             href={`/courses/${course._id}`}
-            className="block bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
+            className="group relative block bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full"
           >
+            {/* Иконка + в правом верхнем углу */}
+            <div className="absolute top-4 right-4 z-10">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSelectCourse(course._id);
+                }}
+                className="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-[#00C1FF] hover:bg-[#00C1FF] hover:text-white transition"
+              >
+                <span className="text-2xl font-bold">+</span>
+              </button>
+            </div>
+
             <div className="p-6 flex-grow">
-              <h3 className="text-xl font-bold mb-3">{course.nameRU || course.nameEN}</h3>
-              <p className="text-gray-600 mb-4 line-clamp-3">{course.description}</p>
+              <h3 className="text-xl font-bold mb-3 text-gray-900">
+                {course.nameRU || course.nameEN}
+              </h3>
+              <p className="text-gray-600 mb-4 line-clamp-3">
+                {course.description}
+              </p>
 
               <div className="flex flex-wrap gap-2 mb-4">
                 {course.directions?.map((dir, idx) => (
                   <span
                     key={idx}
-                    className="inline-block px-3 py-1 bg-lime/20 text-lime-800 text-sm rounded-full"
+                    className="inline-block px-3 py-1 bg-[#00C1FF]/10 text-[#00C1FF] text-sm rounded-full"
                   >
                     {dir}
                   </span>
@@ -94,7 +124,8 @@ export default function HomePage() {
 
               {course.difficulty && (
                 <p className="text-sm text-gray-500">
-                  Сложность: <span className="font-medium">{course.difficulty}</span>
+                  Сложность:{' '}
+                  <span className="font-medium">{course.difficulty}</span>
                 </p>
               )}
             </div>
@@ -108,18 +139,22 @@ export default function HomePage() {
                 }}
                 disabled={addingCourseId === course._id}
                 className={cn(
-                  "w-full py-3 rounded-full font-medium transition-all",
+                  'w-full py-3 rounded-full font-medium transition-all shadow-md',
                   addingCourseId === course._id
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-lime hover:bg-lime/90 active:bg-lime/80 text-primary"
+                    ? 'bg-gray-300 cursor-not-allowed text-gray-700'
+                    : 'bg-[#00C1FF] hover:bg-[#00A1E0] text-white'
                 )}
               >
-                {addingCourseId === course._id ? 'Добавляем...' : 'Выбрать курс'}
+                {addingCourseId === course._id
+                  ? 'Добавляем...'
+                  : 'Выбрать курс'}
               </button>
             </div>
           </Link>
         ))}
       </div>
+
+      <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="fixed bottom-6 right-6 bg-[#00C1FF] text-white p-4 rounded-full shadow-lg">Наверх ↑</button>
 
       {courses.length === 0 && !isLoading && (
         <p className="text-center text-gray-500 text-xl mt-12">
