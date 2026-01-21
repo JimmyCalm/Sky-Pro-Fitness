@@ -118,10 +118,7 @@ export default function ProfilePage() {
                       <div className="mt-4">
                         <div className="flex justify-between text-sm text-gray-600 mb-1">
                           <span>Прогресс</span>
-                          <span>
-                            {courseCompletedWorkouts} / {courseTotalWorkouts}{' '}
-                            тренировок
-                          </span>
+                          <span>{courseProgressPercent}%</span>
                         </div>
                         <ProgressBar
                           current={courseCompletedWorkouts}
