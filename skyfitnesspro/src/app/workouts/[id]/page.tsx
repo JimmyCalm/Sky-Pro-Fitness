@@ -6,6 +6,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import ReactPlayer from 'react-player';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { toast } from 'react-hot-toast';
 
 export default function WorkoutPage() {
   const params = useParams();
@@ -47,7 +48,7 @@ export default function WorkoutPage() {
   // Завершение тренировки
   const handleCompleteWorkout = async () => {
     if (!courseId) {
-      alert('Не удалось определить курс...');
+      toast.error('Не удалось определить курс...');
       return;
     }
 
@@ -56,7 +57,7 @@ export default function WorkoutPage() {
     const success = await updateProgress(progressData);
 
     if (success) {
-      alert('Тренировка завершена!');
+      toast.success('Тренировка завершена!');
       router.back();
     }
   };

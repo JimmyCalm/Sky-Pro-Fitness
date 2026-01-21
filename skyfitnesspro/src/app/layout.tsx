@@ -1,3 +1,4 @@
+import { Toaster } from 'react-hot-toast';
 import type { Metadata } from 'next';
 import './globals.css';
 import Header from '@/components/Header';
@@ -15,6 +16,29 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <AuthProvider>
         <Header />
         {children}
+        <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                borderRadius: '10px',
+                background: '#333',
+                color: '#fff',
+              },
+              success: {
+                style: {
+                  background: '#10B981',
+                  color: 'white',
+                },
+              },
+              error: {
+                style: {
+                  background: '#EF4444',
+                  color: 'white',
+                },
+              },
+            }}
+          />
         </AuthProvider>
       </body>
     </html>

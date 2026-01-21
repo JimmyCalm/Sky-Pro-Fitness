@@ -10,6 +10,7 @@ import DeleteCourseModal from '@/components/DeleteCourseModal';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils';
+import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
   const { user: authUser, isLoading: authLoading } = useAuthContext();
@@ -29,9 +30,9 @@ export default function ProfilePage() {
       await api.delete(`/users/me/courses/${courseToDelete.id}`);
       await mutateUser(); // обновляем список курсов
       await mutateProgress(); // обновляем прогресс (если нужно)
-      alert('Курс успешно удалён!');
+      toast.success('Курс успешно удалён!');
     } catch (err) {
-      alert(`Ошибка удаления: ${getErrorMessage(err)}`);
+      toast.error(`Ошибка удаления: ${getErrorMessage(err)}`);
     } finally {
       setCourseToDelete(null);
       setDeleteModalOpen(false);

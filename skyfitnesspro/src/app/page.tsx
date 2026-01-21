@@ -8,6 +8,7 @@ import { getErrorMessage } from '@/lib/utils';
 import { useState } from 'react';
 import useSWR from 'swr';
 import { User } from '@/lib/types';
+import toast from 'react-hot-toast';
 
 export default function HomePage() {
   const { courses, isLoading, error } = useCourses();
@@ -24,7 +25,7 @@ export default function HomePage() {
 
   const handleSelectCourse = async (courseId: string) => {
     if (!isAuthenticated) {
-      alert('Войдите в аккаунт, чтобы выбрать курс');
+      toast.error('Войдите в аккаунт, чтобы выбрать курс');
       return;
     }
 
@@ -36,7 +37,7 @@ export default function HomePage() {
 
       await mutateUser();
 
-      alert('Курс успешно добавлен в ваш профиль!');
+      toast.success('Курс успешно добавлен в ваш профиль!');
     } catch (err) {
       setAddError(getErrorMessage(err));
     } finally {
