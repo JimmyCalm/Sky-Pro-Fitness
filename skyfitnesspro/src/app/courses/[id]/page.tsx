@@ -49,7 +49,7 @@ export default function CourseDetailPage() {
     );
   }
 
-  const firstWorkoutId = workouts[0]?._id || course.workouts?.[0];
+  const firstWorkoutId = workouts?.[0]?._id;
 
   return (
     <ProtectedRoute>
@@ -131,17 +131,18 @@ export default function CourseDetailPage() {
 
           <button
             onClick={() =>
-              firstWorkoutId && router.push(`/workouts/${firstWorkoutId}`)
+              firstWorkoutId &&
+              router.push(`/workouts/${firstWorkoutId}?courseId=${courseId}`)
             }
-            disabled={!firstWorkoutId}
+            disabled={!firstWorkoutId || isLoading}
             className={cn(
-              'w-full md:w-auto px-10 py-4 rounded-full font-medium text-lg',
-              firstWorkoutId
-                ? 'bg-lime hover:bg-lime/90 text-primary'
+              'w-full md:w-auto px-10 py-4 rounded-full font-medium text-lg transition-all',
+              firstWorkoutId && !isLoading
+                ? 'bg-[#00C1FF] hover:bg-[#00A1E0] text-white'
                 : 'bg-gray-300 cursor-not-allowed text-gray-600'
             )}
           >
-            {completedWorkouts > 0 ? 'Продолжить' : 'Начать курс'}
+            {completedWorkouts > 0 ? 'Продолжить курс' : 'Начать курс'}
           </button>
         </div>
 
