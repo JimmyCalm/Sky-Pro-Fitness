@@ -140,19 +140,24 @@ export default function CoursePage() {
 
         {/* Мотивационный блок — только если курс НЕ добавлен */}
         {(!isAuthenticated || !isCourseAdded) && (
-          <section className="relative rounded-3xl overflow-hidden bg-white text-black">
+          <section className="relative mx-auto mt-16 md:mt-24 w-full max-w-[1160px] h-[486px]  rounded-3xl bg-white text-black">
+            {/* Фон */}
             <div className="absolute inset-0">
               <Image
                 src="/bgRunner-big.png"
                 alt="Фон"
                 fill
-                className="object-cover opacity-30"
+                className="object-cover"
               />
+              {/* Лёгкое затемнение для читаемости текста */}
+              <div className="absolute inset-0 bg-black/40" />
             </div>
 
-            <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center p-8 md:p-16 lg:p-20">
-              <div>
-                <h2 className="text-4xl md:text-5xl font-bold mb-8 leading-tight">
+            {/* Контент */}
+            <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center h-full px-8 md:px-16 lg:px-20">
+              {/* Текстовая часть слева */}
+              <div className="max-w-xl">
+                <h2 className="text-4xl md:text-5xl font-bold mb-8">
                   Начните путь
                   <br />к новому телу
                 </h2>
@@ -173,12 +178,13 @@ export default function CoursePage() {
                 </button>
               </div>
 
-              <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden">
+              {/* Бегущий спортсмен — голова выходит за верх блока */}
+              <div className="relative h-full md:h-[600px] -mt-28 md:-mt-48 lg:-mt-56">
                 <Image
                   src="/runner.png"
-                  alt="Спортсмен"
+                  alt="Спортсмен на старте"
                   fill
-                  className="object-cover object-top"
+                  className="object-contain object-bottom"
                 />
               </div>
             </div>
