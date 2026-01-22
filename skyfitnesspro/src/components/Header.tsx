@@ -11,9 +11,9 @@ export default function Header() {
   const displayName = user?.email?.split('@')[0] || 'Пользователь';
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-white">
       <div className="max-w-[1160px] mx-auto px-4 sm:px-6 lg:px-0 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex-col items-center gap-3">
           <Link href="/">
             <Image
               src="/logo.png"
@@ -32,9 +32,9 @@ export default function Header() {
           {isAuthenticated ? (
             <>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gray-300 overflow-hidden">
+                <div className="w-9 h-9 rounded-full">
                   <Image
-                    src="/avatar-placeholder.png"
+                    src="/miniProfil.png"
                     alt="Аватар"
                     width={36}
                     height={36}

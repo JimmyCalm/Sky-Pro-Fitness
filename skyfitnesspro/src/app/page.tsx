@@ -86,7 +86,7 @@ export default function HomePage() {
             alt="Измени своё тело за полгода!"
             width={480}
             height={140}
-            className="w-full h-auto object-contain drop-shadow-xl"
+            className="w-full h-auto object-contain drop-shadow-xl hidden md:block"
             priority
           />
         </div>

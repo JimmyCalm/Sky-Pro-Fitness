@@ -52,7 +52,7 @@ export default function ProfilePage() {
 
   return (
     <ProtectedRoute>
-      <main className="min-h-screen bg-gray-50 py-10 px-4">
+      <main className="min-h-screen bg-white py-10 px-4">
         <div className="max-w-6xl mx-auto">
           {/* Заголовок и пользователь */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-6">
@@ -65,9 +65,9 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gray-300 overflow-hidden">
+              <div className="w-16 h-16 rounded-lg ">
                 <Image
-                  src="/avatar-placeholder.png" // добавь свою аватарку или используй user?.avatar
+                  src="/profile.png"
                   alt="Аватар"
                   width={64}
                   height={64}
