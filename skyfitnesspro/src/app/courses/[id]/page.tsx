@@ -1,276 +1,212 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
-import { useCourseDetail } from '@/hooks/useCourseDetail';
 import { useAuthContext } from '@/contexts/AuthContext';
-import ProgressBar from '@/components/ProgressBar';
-import toast from 'react-hot-toast';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
-import { WorkoutProgress } from '@/lib/types';
 import api from '@/lib/api';
-import { getErrorMessage } from '@/lib/utils'; // ← добавь импорт
+import Image from 'next/image';
+import { useParams, useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import useSWR from 'swr';
+import Link from 'next/link';
 
-export default function CourseDetailPage() {
-  const params = useParams();
-  const courseId = params.id as string;
+export default function CoursePage() {
+  const { id } = useParams();
+  const { isAuthenticated } = useAuthContext();
   const router = useRouter();
 
-  const {
-    course,
-    workouts,
-    progress,
-    progressPercent,
-    completedWorkouts,
-    totalWorkouts,
-    isLoading,
-    error,
-  } = useCourseDetail(courseId);
+  // Маппинг для больших картинок курсов (как на главной)
+  const courseBigImageMap: Record<string, string> = {
+    Йога: '/yoga-big.png',
+    Стретчинг: '/stretching-big.png',
+    Фитнес: '/fitness-big.png',
+    'Степ-аэробика': '/step-aerobics-big.png',
+    Бодифлекс: '/bodyflex-big.png',
+    Yoga: '/yoga-big.png',
+    Stretching: '/stretching-big.png',
+    Fitness: '/fitness-big.png',
+  };
 
-  const { isAuthenticated } = useAuthContext();
+  // Загружаем курс
+  const { data: course, error, isLoading } = useSWR(
+    id ? `/courses/${id}` : null,
+    (url) => api.get(url).then(res => res.data)
+  );
 
-  // Курс добавлен, если progress загружен
-  const isAdded = isAuthenticated && progress !== undefined;
+  // Загружаем пользователя (selectedCourses)
+  const { data: userData, mutate: mutateUser } = useSWR(
+    isAuthenticated ? '/users/me' : null,
+    () => api.get('/users/me').then(res => res.data.user ?? res.data)
+  );
 
-  // Сортируем тренировки по порядку в course.workouts
-  const sortedWorkouts =
-    workouts?.slice().sort((a, b) => {
-      const indexA =
-        course?.workouts?.indexOf(a._id) ?? Number.MAX_SAFE_INTEGER;
-      const indexB =
-        course?.workouts?.indexOf(b._id) ?? Number.MAX_SAFE_INTEGER;
-      return indexA - indexB;
-    }) ?? [];
-
-  const nextWorkoutId = (() => {
-    if (sortedWorkouts.length === 0) return null;
-
-    for (const w of sortedWorkouts) {
-      const wp = progress?.workoutsProgress?.find(
-        (p: WorkoutProgress) => p.workoutId === w._id
-      );
-      if (!wp?.workoutCompleted) return w._id;
-    }
-
-    return sortedWorkouts[0]?._id ?? null;
-  })();
+  const isCourseAdded = userData?.selectedCourses?.includes(id);
 
   const handleAddCourse = async () => {
     if (!isAuthenticated) {
       toast.error('Войдите, чтобы добавить курс');
-      router.push(`/login?redirect=/courses/${courseId}`);
+      router.push(`/login?redirect=/courses/${id}`);
       return;
     }
 
     try {
-      await api.post('/users/me/courses', { courseId });
+      await api.post('/users/me/courses', { courseId: id });
       toast.success('Курс добавлен!');
-      router.refresh();
+      mutateUser(); // обновляем данные пользователя
     } catch (err) {
-      toast.error(getErrorMessage(err));
+      toast.error('Ошибка при добавлении курса');
     }
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-xl text-gray-600">Загрузка курса...</p>
-      </div>
-    );
+    return <div className="min-h-screen grid place-items-center">Загрузка...</div>;
   }
 
   if (error || !course) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-red-600 gap-6 bg-gray-50">
-        <p className="text-2xl font-medium">
-          Курс не найден или произошла ошибка
-        </p>
-        <Link
-          href="/"
-          className="px-8 py-3 bg-[#00C1FF] text-white rounded-full hover:bg-[#00A1E0] font-medium"
-        >
-          На главную
-        </Link>
+      <div className="min-h-screen grid place-items-center text-red-600">
+        Курс не найден или произошла ошибка
       </div>
     );
   }
 
+  // Выбираем большую картинку по названию курса
+  const bigImageSrc = courseBigImageMap[course.nameRU] || courseBigImageMap[course.nameEN] || '/placeholder-course-big.png';
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="py-10 px-4 max-w-6xl mx-auto">
-        <Link
-          href="/"
-          className="text-blue-600 hover:underline mb-6 inline-block font-medium"
-        >
+    <main className="min-h-screen bg-gray-50 pb-20">
+      {/* Большой баннер с картинкой курса */}
+      <div className="relative h-[400px] md:h-[500px] overflow-hidden">
+        <Image
+          src={bigImageSrc}
+          alt={course.nameRU}
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4">{course.nameRU}</h1>
+          <p className="text-lg md:text-xl max-w-3xl opacity-90">
+            {course.description}
+          </p>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 md:px-8 lg:px-0 py-10 md:py-16">
+        {/* Хлебные крошки */}
+        <Link href="/" className="text-blue-600 hover:underline mb-6 inline-block font-medium">
           ← На главную
         </Link>
 
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-10">
-          <h1 className="text-4xl font-bold mb-6 text-gray-900">
-            {course.nameRU || course.nameEN}
-          </h1>
-
-          <p className="text-gray-700 mb-8 leading-relaxed">
-            {course.description}
-          </p>
-
-          {/* Теги */}
-          <div className="flex flex-wrap gap-3 mb-8">
-            {course.directions?.map((dir, i) => (
-              <span
-                key={i}
-                className="px-4 py-1 bg-[#00C1FF]/10 text-[#00C1FF] rounded-full text-sm font-medium"
-              >
-                {dir}
-              </span>
-            ))}
-            {course.fitting?.map((fit, i) => (
-              <span
-                key={i}
-                className="px-4 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-              >
-                {fit}
-              </span>
-            ))}
-          </div>
-
-          {/* Характеристики */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-            {course.difficulty && (
-              <div className="bg-gray-50 p-4 rounded-xl">
-                <span className="block text-sm text-gray-500 mb-1">
-                  Сложность
-                </span>
-                <p className="font-medium text-gray-900">{course.difficulty}</p>
-              </div>
-            )}
-            {course.durationInDays && (
-              <div className="bg-gray-50 p-4 rounded-xl">
-                <span className="block text-sm text-gray-500 mb-1">
-                  Длительность
-                </span>
-                <p className="font-medium text-gray-900">
-                  {course.durationInDays} дней
-                </p>
-              </div>
-            )}
-            {course.dailyDurationInMinutes && (
-              <div className="bg-gray-50 p-4 rounded-xl">
-                <span className="block text-sm text-gray-500 mb-1">В день</span>
-                <p className="font-medium text-gray-900">
-                  {course.dailyDurationInMinutes.from}–
-                  {course.dailyDurationInMinutes.to} мин
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Прогресс — только для авторизованных и добавленных */}
-          {isAuthenticated && isAdded && (
-            <div className="mb-10 bg-gradient-to-r from-[#00C1FF]/5 to-[#00C1FF]/10 rounded-xl p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-lg text-gray-900">
-                  Ваш прогресс
-                </h3>
-                <span className="text-sm font-medium text-gray-700">
-                  {completedWorkouts}/{totalWorkouts} • {progressPercent}%
-                </span>
-              </div>
-              <ProgressBar
-                current={completedWorkouts}
-                total={totalWorkouts}
-                percentage={progressPercent}
-                showLabel={false}
-                height="lg"
-              />
-            </div>
-          )}
-
-          {/* Кнопка действия */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            {isAuthenticated ? (
-              isAdded ? (
-                <button
-                  onClick={() =>
-                    nextWorkoutId &&
-                    router.push(
-                      `/workouts/${nextWorkoutId}?courseId=${courseId}`
-                    )
-                  }
-                  disabled={!nextWorkoutId}
-                  className={cn(
-                    'flex-1 py-4 rounded-full font-medium text-lg transition-all shadow-md',
-                    nextWorkoutId
-                      ? 'bg-[#00C1FF] hover:bg-[#00A1E0] text-white active:bg-[#0088CC]'
-                      : 'bg-gray-300 cursor-not-allowed text-gray-600'
-                  )}
-                >
-                  {completedWorkouts > 0 ? 'Продолжить курс' : 'Начать курс'}
-                </button>
-              ) : (
-                <button
-                  onClick={handleAddCourse}
-                  className="flex-1 py-4 rounded-full font-medium text-lg transition-all shadow-md bg-[#00C1FF] hover:bg-[#00A1E0] text-white active:bg-[#0088CC]"
-                >
-                  Добавить курс
-                </button>
-              )
-            ) : (
-              <Link
-                href={`/login?redirect=/courses/${courseId}`}
-                className="flex-1 py-4 rounded-full font-medium text-lg text-center bg-[#00C1FF] hover:bg-[#00A1E0] text-white transition-all shadow-md"
-              >
-                Войдите, чтобы добавить курс
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {/* Список тренировок */}
-        <h2 className="text-2xl font-semibold mb-6">Тренировки в курсе</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {sortedWorkouts.map((workout) => {
-            const workoutProgress = progress?.workoutsProgress?.find(
-              (wp: WorkoutProgress) => wp.workoutId === workout._id
-            );
-            const isCompleted = workoutProgress?.workoutCompleted || false;
-
-            return (
-              <div
-                key={workout._id}
-                className="bg-white rounded-xl shadow p-6 hover:shadow-md transition-shadow"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-xl font-bold">{workout.name}</h3>
-                  {isCompleted && (
-                    <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                      Завершено
-                    </span>
-                  )}
+        {/* Контент для НЕ авторизованных / НЕ добавивших курс */}
+        {!isAuthenticated || !isCourseAdded ? (
+          <>
+            <section className="mb-16">
+              <h2 className="text-3xl font-bold mb-6">Подойдёт для вас, если:</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gray-900 text-white p-6 rounded-2xl">
+                  <p className="text-lg">Давно хотели попробовать йогу, но не решались начать</p>
                 </div>
-
-                <p className="text-gray-600 mb-4">
-                  Упражнений: {workout.exercises?.length || 0}
-                </p>
-
-                <Link
-                  href={`/workouts/${workout._id}?courseId=${courseId}`}
-                  className="inline-block px-6 py-2 bg-gray-100 border border-gray-300 rounded-full hover:bg-gray-200 transition-colors font-medium"
-                >
-                  {isCompleted ? 'Повторить' : 'Посмотреть тренировку'}
-                </Link>
+                <div className="bg-gray-900 text-white p-6 rounded-2xl">
+                  <p className="text-lg">Хотите укрепить позвоночник, избавиться от болей в спине и суставах</p>
+                </div>
+                <div className="bg-gray-900 text-white p-6 rounded-2xl">
+                  <p className="text-lg">Ищете активность, полезную для тела и души</p>
+                </div>
               </div>
-            );
-          })}
-        </div>
+            </section>
 
-        {sortedWorkouts.length === 0 && (
-          <p className="text-center text-gray-500 py-10 text-lg">
-            Тренировки пока не добавлены в курс
-          </p>
+            <section className="mb-16">
+              <h2 className="text-3xl font-bold mb-6">Направления</h2>
+              <div className="flex flex-wrap gap-3">
+                {['Йога для новичков', 'Классическая йога', 'Йогатерапия', 'Кундалини-йога', 'Хатха-йога', 'Аштанга-йога'].map((dir) => (
+                  <span key={dir} className="bg-green-500/20 text-green-400 px-4 py-2 rounded-full text-sm font-medium">
+                    {dir}
+                  </span>
+                ))}
+              </div>
+            </section>
+
+            {/* Мотивационный блок */}
+            <section className="mt-16 md:mt-24 relative rounded-3xl overflow-hidden bg-gradient-to-br from-green-700 to-teal-700 text-white">
+              <div className="absolute inset-0">
+                <Image
+                  src="/bgRunner.png"
+                  alt="Фон бегуна"
+                  fill
+                  className="object-cover opacity-40"
+                />
+                <div className="absolute inset-0 bg-black/30" />
+              </div>
+
+              <div className="relative z-10 px-6 py-12 md:p-16 lg:p-20 max-w-5xl mx-auto">
+                <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+                  <div>
+                    <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                      Начните путь
+                      <br />
+                      к новому телу
+                    </h2>
+
+                    <ul className="space-y-4 text-lg md:text-xl opacity-90">
+                      <li>• проработка всех групп мышц</li>
+                      <li>• тренировка суставов</li>
+                      <li>• улучшение циркуляции крови</li>
+                      <li>• упражнения заряжают бодростью</li>
+                      <li>• помогают противостоять стрессам</li>
+                    </ul>
+
+                    <button
+                      onClick={handleAddCourse}
+                      className="mt-8 bg-white text-green-800 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition shadow-lg"
+                    >
+                      Войдите, чтобы добавить курс
+                    </button>
+                  </div>
+
+                  <div className="relative h-80 md:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
+                    <Image
+                      src="/runner.png"
+                      alt="Спортсмен на старте"
+                      fill
+                      className="object-cover object-top"
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+          </>
+        ) : (
+          /* Контент для добавленного курса */
+          <>
+            <section className="mb-12">
+              <h2 className="text-3xl font-bold mb-4">Ваш прогресс</h2>
+              <div className="bg-gray-100 rounded-xl p-6">
+                <div className="flex justify-between mb-2">
+                  <span className="font-medium">0/5 тренировок</span>
+                  <span className="font-medium">0%</span>
+                </div>
+                <div className="w-full bg-gray-300 rounded-full h-3">
+                  <div className="bg-[#00C1FF] h-3 rounded-full w-[0%] transition-all"></div>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-3xl font-bold mb-6">Тренировки в курсе</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Здесь должен быть map по workouts */}
+                <div className="bg-white p-6 rounded-2xl shadow-md">
+                  <h3 className="text-xl font-bold mb-2">Утренняя практика</h3>
+                  <p className="text-gray-600 mb-4">Йога на каждый день / 1 день</p>
+                  <button className="bg-[#00C1FF] text-white px-6 py-3 rounded-full hover:bg-[#00a1e0]">
+                    Посмотреть тренировку
+                  </button>
+                </div>
+              </div>
+            </section>
+          </>
         )}
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
