@@ -153,7 +153,9 @@ export default function HomePage() {
 
               {/* Информация */}
               <div className="p-5 flex flex-col flex-grow">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">{course.nameRU}</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  {course.nameRU}
+                </h3>
 
                 <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-gray-700 mb-4">
                   <div className="flex items-center gap-2 bg-[#F7F7F7] px-3 py-1 rounded-full">
@@ -163,14 +165,20 @@ export default function HomePage() {
 
                   <div className="flex items-center gap-2 bg-[#F7F7F7] px-3 py-1 rounded-full">
                     <Image src="/time.svg" alt="" width={15} height={15} />
-                    <span>{min}–{max} мин/день</span>
+                    <span>
+                      {min}–{max} мин/день
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-2 bg-[#F7F7F7] px-3 py-1 rounded-full">
                     <DifficultyIcon level={level} width={18} height={18} />
                     <div className="text-[14px] text-black-400 mt-auto">
-                  {level === 'easy' ? 'Начальный' : level === 'hard' ? 'Сложный' : 'Средний'}
-                </div>
+                      {level === 'easy'
+                        ? 'Начальный'
+                        : level === 'hard'
+                          ? 'Сложный'
+                          : 'Средний'}
+                    </div>
                   </div>
                 </div>
               </div>
