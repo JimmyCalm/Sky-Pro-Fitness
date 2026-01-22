@@ -179,7 +179,7 @@ export default function CoursePage() {
               </div>
 
               {/* Бегущий спортсмен — голова выходит за верх блока */}
-              <div className="relative h-full md:h-[600px] -mt-28 md:-mt-48 lg:-mt-56">
+              <div className="relative h-full md:h-[600px] -mt-28 md:-mt-48 lg:-mt-56 translate-x-4 md:translate-x-8 lg:translate-x-12">
                 <Image
                   src="/runner.png"
                   alt="Спортсмен на старте"
