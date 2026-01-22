@@ -3,7 +3,6 @@
 import { useAuthContext } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import useSWR from 'swr';

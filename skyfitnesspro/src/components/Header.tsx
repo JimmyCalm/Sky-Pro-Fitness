@@ -1,4 +1,3 @@
-// components/Header.tsx
 'use client';
 
 import Image from 'next/image';
@@ -6,51 +5,68 @@ import Link from 'next/link';
 import { useAuthContext } from '@/contexts/AuthContext';
 
 export default function Header() {
-  const { isAuthenticated, logout, user } = useAuthContext();
+  const { isAuthenticated, user, logout } = useAuthContext();
+
+  // Берём имя из email (до @)
+  const displayName = user?.email?.split('@')[0] || 'Пользователь';
 
   return (
-    <header className="bg-primary text-secondary py-10 md:py-12">
-      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-0">
-        <div className="flex flex-col">
+    <header className="bg-white shadow-sm">
+      <div className="max-w-[1160px] mx-auto px-4 sm:px-6 lg:px-0 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
           <Link href="/">
-            <Image src="/logo.png" alt="Logo" width={220} height={35} priority />
+            <Image
+              src="/logo.png"
+              alt="SkyFitnessPro"
+              width={180}
+              height={35}
+              priority
+            />
           </Link>
-          <h4 className="mt-3 md:mt-4 text-base md:text-lg font-normal">
+          <span className="text-sm text-gray-600 hidden sm:block">
             Онлайн-тренировки для занятий дома
-          </h4>
+          </span>
         </div>
 
-        <nav>
-          <ul className="flex items-center gap-4 md:gap-6">
-            {isAuthenticated ? (
-              <>
-                <li className="text-base md:text-lg hidden sm:block">
-                  Привет, {user?.email?.split('@')[0]}!
-                </li>
-                <li>
-                  <Link href="/profile" className="text-base md:text-lg hover:underline">
-                    Профиль
-                  </Link>
-                </li>
-                <li>
-                  <button
-                    onClick={logout}
-                    className="bg-lime text-primary px-5 py-2.5 md:px-6 md:py-3 rounded-full text-sm md:text-base hover:opacity-90 transition-opacity"
-                  >
-                    Выйти
-                  </button>
-                </li>
-              </>
-            ) : (
-              <li>
-                <Link href="/login">
-                  <button className="bg-[#BCEC30] text-primary px-5 py-2.5 md:px-6 md:py-3 rounded-full text-sm md:text-base hover:opacity-90 transition-opacity">
-                    Войти
-                  </button>
-                </Link>
-              </li>
-            )}
-          </ul>
+        <nav className="flex items-center gap-6">
+          {isAuthenticated ? (
+            <>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-gray-300 overflow-hidden">
+                  <Image
+                    src="/avatar-placeholder.png"
+                    alt="Аватар"
+                    width={36}
+                    height={36}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="font-medium hidden md:block">
+                  {displayName}
+                </span>
+              </div>
+
+              <Link
+                href="/profile"
+                className="text-gray-700 hover:text-black font-medium"
+              >
+                Профиль
+              </Link>
+
+              <button
+                onClick={logout}
+                className="px-5 py-2 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition"
+              >
+                Выйти
+              </button>
+            </>
+          ) : (
+            <Link href="/login">
+              <button className="px-6 py-2 bg-[#BCEC30] text-black rounded-full hover:bg-[#a3d32a] transition font-medium">
+                Войти
+              </button>
+            </Link>
+          )}
         </nav>
       </div>
     </header>
