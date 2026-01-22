@@ -78,7 +78,7 @@ export default function CoursePage() {
     '/placeholder-course-big.png';
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-white">
       {/* Большой баннер */}
       <div className="relative mx-auto w-full max-w-[1160px] h-[310px] overflow-hidden rounded-[30px]">
         <Image
@@ -89,10 +89,6 @@ export default function CoursePage() {
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-
-        <div className="absolute bottom-8 left-8 right-8 text-white">
-          <h1 className="text-5xl md:text-6xl font-bold">{course.nameRU}</h1>
-        </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 md:py-16">
@@ -114,10 +110,10 @@ export default function CoursePage() {
                 key={index}
                 className="bg-gray-900 text-white rounded-2xl p-8 flex items-start gap-6 h-[141px] w-full max-w-[368px]"
               >
-                <span className="text-[75px] font-medium leading-none text-white">
+                <span className="text-[75px] font-medium leading-none text-[#BCEC30]">
                   {index + 1}
                 </span>
-                <p className="text-lg leading-relaxed mt-3">{item}</p>
+                <p className="text-lg leading-relaxed mt-[-15px]">{item}</p>
               </div>
             ))}
           </div>
@@ -132,7 +128,7 @@ export default function CoursePage() {
               {course.directions?.map((dir: string, index: number) => (
                 <div
                   key={index}
-                  className="flex items-center gap-3 bg-white/20 px-5 py-3 rounded-full text-black font-medium text-base"
+                  className="flex items-center gap-3  px-5 py-3 rounded-full text-black font-medium text-base"
                 >
                   <Image src="/star.png" alt="Звезда" width={24} height={24} />
                   {dir}
@@ -144,10 +140,10 @@ export default function CoursePage() {
 
         {/* Мотивационный блок — только если курс НЕ добавлен */}
         {(!isAuthenticated || !isCourseAdded) && (
-          <section className="relative rounded-3xl overflow-hidden bg-[#0A3D2E] text-white">
+          <section className="relative rounded-3xl overflow-hidden bg-white text-black">
             <div className="absolute inset-0">
               <Image
-                src="/bgRunner.png"
+                src="/bgRunner-big.png"
                 alt="Фон"
                 fill
                 className="object-cover opacity-30"
@@ -177,7 +173,7 @@ export default function CoursePage() {
                 </button>
               </div>
 
-              <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
+              <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden">
                 <Image
                   src="/runner.png"
                   alt="Спортсмен"
