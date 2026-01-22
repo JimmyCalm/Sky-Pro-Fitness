@@ -1,13 +1,1 @@
 @import 'tailwindcss';
-
-.difficulty-wrapper.easy-difficulty img {
-  filter: hue-rotate(90deg) saturate(2) brightness(1.1);   /* зелёный оттенок */
-}
-
-.difficulty-wrapper.medium-difficulty img {
-  filter: hue-rotate(30deg) saturate(1.8) brightness(1.15); /* оранжевый */
-}
-
-.difficulty-wrapper.hard-difficulty img {
-  filter: hue-rotate(0deg) saturate(2.2) brightness(0.95);  /* красный */
-}
