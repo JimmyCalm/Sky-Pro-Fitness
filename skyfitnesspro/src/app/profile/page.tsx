@@ -7,38 +7,76 @@ import { useProgress } from '@/hooks/useProgress';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ProgressBar from '@/components/ProgressBar';
 import DeleteCourseModal from '@/components/DeleteCourseModal';
+import ResetProgressModal from '@/components/ResetProgressModal'; // ← новый модал
 import Link from 'next/link';
 import api from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils';
+import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
   const { user: authUser, isLoading: authLoading } = useAuthContext();
-  const { selectedCourses, isLoading: coursesLoading, error: coursesError, mutateUser } = useSelectedCourses();
-  const { courseProgress, isLoading: progressLoading, error: progressError, mutateProgress } = useProgress();
+  const {
+    selectedCourses,
+    isLoading: coursesLoading,
+    error: coursesError,
+    mutateUser,
+  } = useSelectedCourses();
+  const {
+    courseProgress,
+    isLoading: progressLoading,
+    error: progressError,
+    mutateProgress,
+  } = useProgress();
 
+  // Для удаления курса
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [courseToDelete, setCourseToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [courseToDelete, setCourseToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
-  const isLoading = authLoading || coursesLoading || progressLoading;
-  const error = coursesError || progressError;
+  // Для сброса прогресса
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [courseToReset, setCourseToReset] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
+  const isLoadingOverall = authLoading || coursesLoading || progressLoading;
+  const errorOverall = coursesError || progressError;
 
   const handleDeleteCourse = async () => {
     if (!courseToDelete) return;
 
     try {
       await api.delete(`/users/me/courses/${courseToDelete.id}`);
-      await mutateUser(); // обновляем список курсов
-      await mutateProgress(); // обновляем прогресс (если нужно)
-      alert('Курс успешно удалён!');
+      await mutateUser();
+      toast.success('Курс успешно удалён!');
     } catch (err) {
-      alert(`Ошибка удаления: ${getErrorMessage(err)}`);
+      toast.error(`Ошибка удаления: ${getErrorMessage(err)}`);
     } finally {
       setCourseToDelete(null);
       setDeleteModalOpen(false);
     }
   };
 
-  if (isLoading) {
+  const handleResetProgress = async () => {
+    if (!courseToReset) return;
+
+    try {
+      await api.patch(`/courses/${courseToReset.id}/reset`);
+      await mutateProgress(); // обновляем прогресс
+      await mutateUser(); // обновляем пользователя (на всякий случай)
+      toast.success('Прогресс курса успешно сброшен!');
+    } catch (err) {
+      toast.error(`Ошибка сброса прогресса: ${getErrorMessage(err)}`);
+    } finally {
+      setCourseToReset(null);
+      setResetModalOpen(false);
+    }
+  };
+
+  if (isLoadingOverall) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
         <p className="text-xl text-gray-600">Загрузка профиля...</p>
@@ -46,10 +84,10 @@ export default function ProfilePage() {
     );
   }
 
-  if (error) {
+  if (errorOverall) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center text-red-600 gap-4">
-        <p>Ошибка загрузки данных: {error}</p>
+        <p>Ошибка загрузки данных: {errorOverall}</p>
         <button
           onClick={() => mutateUser()}
           className="px-6 py-2 bg-[#00C1FF] text-white rounded-full hover:bg-[#00A1E0]"
@@ -66,9 +104,15 @@ export default function ProfilePage() {
     <ProtectedRoute>
       <main className="py-10 px-4 max-w-6xl mx-auto">
         <div className="mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">Личный кабинет</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-3">
+            Личный кабинет
+          </h1>
           <p className="text-lg text-gray-600">
-            Добро пожаловать, <span className="font-medium">{displayUser?.email || 'пользователь'}</span>!
+            Добро пожаловать,{' '}
+            <span className="font-medium">
+              {displayUser?.email || 'пользователь'}
+            </span>
+            !
           </p>
         </div>
 
@@ -77,7 +121,9 @@ export default function ProfilePage() {
 
           {selectedCourses.length === 0 ? (
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-10 text-center">
-              <p className="text-xl text-gray-600 mb-6">У вас пока нет выбранных курсов</p>
+              <p className="text-xl text-gray-600 mb-6">
+                У вас пока нет выбранных курсов
+              </p>
               <Link
                 href="/"
                 className="inline-block bg-[#00C1FF] text-white px-8 py-3 rounded-full font-medium hover:bg-[#00A1E0] transition-colors"
@@ -87,11 +133,17 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {selectedCourses.map(course => {
-                const courseProg = courseProgress.find(cp => cp.courseId === course._id);
-                const completed = courseProg?.workoutsProgress?.filter(wp => wp.workoutCompleted).length ?? 0;
+              {selectedCourses.map((course) => {
+                const courseProg = courseProgress.find(
+                  (cp) => cp.courseId === course._id
+                );
+                const completed =
+                  courseProg?.workoutsProgress?.filter(
+                    (wp) => wp.workoutCompleted
+                  ).length ?? 0;
                 const total = course.workouts?.length ?? 0;
-                const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+                const percent =
+                  total > 0 ? Math.round((completed / total) * 100) : 0;
 
                 return (
                   <div
@@ -149,6 +201,19 @@ export default function ProfilePage() {
                       >
                         Удалить
                       </button>
+
+                      <button
+                        onClick={() => {
+                          setCourseToReset({
+                            id: course._id,
+                            name: course.nameRU || course.nameEN || 'Курс',
+                          });
+                          setResetModalOpen(true);
+                        }}
+                        className="px-4 py-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition-colors font-medium"
+                      >
+                        Сбросить прогресс
+                      </button>
                     </div>
                   </div>
                 );
@@ -157,7 +222,7 @@ export default function ProfilePage() {
           )}
         </section>
 
-        {/* Модалка подтверждения удаления */}
+        {/* Модалка удаления курса */}
         {courseToDelete && (
           <DeleteCourseModal
             isOpen={deleteModalOpen}
@@ -167,6 +232,19 @@ export default function ProfilePage() {
             }}
             onConfirm={handleDeleteCourse}
             courseName={courseToDelete.name}
+          />
+        )}
+
+        {/* Модалка сброса прогресса */}
+        {courseToReset && (
+          <ResetProgressModal
+            isOpen={resetModalOpen}
+            onClose={() => {
+              setResetModalOpen(false);
+              setCourseToReset(null);
+            }}
+            onConfirm={handleResetProgress}
+            courseName={courseToReset.name}
           />
         )}
       </main>

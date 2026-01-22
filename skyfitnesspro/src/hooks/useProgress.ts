@@ -10,18 +10,23 @@ const progressFetcher = (courseIds: string[]) => {
   if (courseIds.length === 0) return Promise.resolve([]);
 
   return Promise.all(
-    courseIds.map(courseId =>
-      api
-        .get(`/users/me/progress?courseId=${courseId}`)
-        .then(res => res.data)
-        .catch(() => null)
+    courseIds.map(
+      (courseId) =>
+        api
+          .get(`/users/me/progress?courseId=${courseId}`)
+          .then((res) => res.data)
+          .catch(() => null) // ошибки по отдельным курсам не ломают всё
     )
   );
 };
 
 export function useProgress() {
   const { selectedCourses } = useSelectedCourses();
-  const courseIds = selectedCourses.map(course => course._id);
+  const courseIds = selectedCourses.map((course) => course._id);
+
+  // Проверяем наличие токена — если гостя, НЕ делаем запрос прогресса
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const {
     data: rawCourseProgress = [],
@@ -29,7 +34,7 @@ export function useProgress() {
     isLoading,
     mutate,
   } = useSWR<CourseProgress[]>(
-    courseIds.length > 0 ? ['progress', courseIds] : null, // ключ зависит от courseIds
+    token && courseIds.length > 0 ? ['progress', courseIds] : null, // ← ключ зависит от токена и курсов
     () => progressFetcher(courseIds),
     {
       revalidateOnFocus: false,
@@ -37,7 +42,7 @@ export function useProgress() {
     }
   );
 
-  // Фильтруем null'ы (ошибки по отдельным курсам)
+  // Фильтруем null'ы
   const courseProgress = rawCourseProgress.filter(Boolean) as CourseProgress[];
 
   return {

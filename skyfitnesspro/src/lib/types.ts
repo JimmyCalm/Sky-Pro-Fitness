@@ -1,4 +1,4 @@
-import z from "zod";
+import z from 'zod';
 
 export interface User {
   _id?: string;
@@ -16,7 +16,7 @@ export interface Course {
   nameEN: string;
   description: string;
   directions: string[];
-  fitting: string[]; 
+  fitting: string[];
   difficulty?: string;
   durationInDays?: number;
   dailyDurationInMinutes?: {
@@ -50,13 +50,14 @@ export interface CourseProgress {
 }
 
 export const registerSchema = z.object({
-  email: z.string().email("Введите корректный Email"),
-  password: z.string()
-    .min(6, "Пароль должен содержать не менее 6 символов")
-    .regex(/[A-Z]/, "Пароль должен содержать как минимум одну заглавную букву")
+  email: z.string().email('Введите корректный Email'),
+  password: z
+    .string()
+    .min(6, 'Пароль должен содержать не менее 6 символов')
+    .regex(/[A-Z]/, 'Пароль должен содержать как минимум одну заглавную букву')
     .refine(
       (password) => (password.match(/[^A-Za-z0-9]/g) || []).length >= 2,
-      "Пароль должен содержать не менее 2 спецсимволов"
+      'Пароль должен содержать не менее 2 спецсимволов'
     ),
 });
 

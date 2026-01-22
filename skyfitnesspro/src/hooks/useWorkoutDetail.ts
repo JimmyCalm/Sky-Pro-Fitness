@@ -5,9 +5,10 @@ import api from '@/lib/api';
 import { Workout, WorkoutProgress } from '@/lib/types';
 import { getErrorMessage } from '@/lib/utils';
 
-const workoutFetcher = (url: string) => api.get(url).then(res => res.data);
+const workoutFetcher = (url: string) => api.get(url).then((res) => res.data);
 
-export function useWorkoutDetail(workoutId: string, courseId?: string) {  // ← добавили courseId как опциональный параметр
+export function useWorkoutDetail(workoutId: string, courseId?: string) {
+  // ← добавили courseId как опциональный параметр
   const {
     data: workout,
     error: workoutError,
@@ -17,9 +18,10 @@ export function useWorkoutDetail(workoutId: string, courseId?: string) {  // ←
   });
 
   // Прогресс по тренировке (требует courseId)
-  const progressKey = courseId && workoutId 
-    ? `/users/me/progress?courseId=${courseId}&workoutId=${workoutId}` 
-    : null;
+  const progressKey =
+    courseId && workoutId
+      ? `/users/me/progress?courseId=${courseId}&workoutId=${workoutId}`
+      : null;
 
   const {
     data: progress,
@@ -28,7 +30,7 @@ export function useWorkoutDetail(workoutId: string, courseId?: string) {  // ←
     mutate: mutateProgress,
   } = useSWR<WorkoutProgress | null>(
     progressKey,
-    (url) => api.get(url).then(res => res.data),
+    (url) => api.get(url).then((res) => res.data),
     { revalidateOnFocus: false }
   );
 
@@ -54,7 +56,10 @@ export function useWorkoutDetail(workoutId: string, courseId?: string) {  // ←
     workout,
     progress,
     isLoading: workoutLoading || progressLoading,
-    error: workoutError || progressError ? getErrorMessage(workoutError || progressError) : null,
+    error:
+      workoutError || progressError
+        ? getErrorMessage(workoutError || progressError)
+        : null,
     updateProgress,
     mutateProgress,
   };

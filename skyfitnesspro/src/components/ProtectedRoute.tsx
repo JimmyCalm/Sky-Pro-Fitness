@@ -20,13 +20,13 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   }, [isAuthenticated, isLoading, router]);
 
   // Пока идёт проверка — показываем лоадер (пока ещё в задумке)
-//   if (isLoading) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center">
-//         <LoadingSpinner />
-//       </div>
-//     );
-//   }
+  //   if (isLoading) {
+  //     return (
+  //       <div className="min-h-screen flex items-center justify-center">
+  //         <LoadingSpinner />
+  //       </div>
+  //     );
+  //   }
 
   // Если не авторизован — ничего не рендерим (редирект уже произошёл)
   if (!isAuthenticated) {

@@ -25,7 +25,12 @@ export function useAuth() {
     const loadUser = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
-        setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false }));
+        setState({
+          user: null,
+          isLoading: false,
+          error: null,
+          isAuthenticated: false,
+        });
         return;
       }
 
@@ -52,44 +57,50 @@ export function useAuth() {
     loadUser();
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+  const login = useCallback(
+    async (email: string, password: string) => {
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    try {
-      const res = await api.post('/auth/login', ({ email, password }));
-      const { token } = res.data;
+      try {
+        const res = await api.post('/auth/login', { email, password });
+        const { token } = res.data;
 
-      localStorage.setItem('token', token);
-      const userRes = await api.get('/users/me');
+        localStorage.setItem('token', token);
+        const userRes = await api.get('/users/me');
 
-      setState({
-        user: userRes.data,
-        isLoading: false,
-        error: null,
-        isAuthenticated: true,
-      });
+        setState({
+          user: userRes.data,
+          isLoading: false,
+          error: null,
+          isAuthenticated: true,
+        });
 
-      router.push('/profile');
-      return true;
-    } catch (err: unknown) {
-      const message = getErrorMessage(err);
-      setState(prev => ({ ...prev, isLoading: false, error: message }));
-      return false;
-    }
-  }, [router]);
+        router.push('/profile');
+        return true;
+      } catch (err: unknown) {
+        const message = getErrorMessage(err);
+        setState((prev) => ({ ...prev, isLoading: false, error: message }));
+        return false;
+      }
+    },
+    [router]
+  );
 
-  const register = useCallback(async (email: string, password: string) => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+  const register = useCallback(
+    async (email: string, password: string) => {
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    try {
-      await api.post('/auth/register', ({ email, password }));
-      return await login(email, password);
-    } catch (err: unknown) {
-      const message = getErrorMessage(err);
-      setState(prev => ({ ...prev, isLoading: false, error: message }));
-      return false;
-    }
-  }, [login]);
+      try {
+        await api.post('/auth/register', { email, password });
+        return await login(email, password);
+      } catch (err: unknown) {
+        const message = getErrorMessage(err);
+        setState((prev) => ({ ...prev, isLoading: false, error: message }));
+        return false;
+      }
+    },
+    [login]
+  );
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');

@@ -3,19 +3,19 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 
-interface DeleteCourseModalProps {
+interface ResetProgressModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   courseName: string;
 }
 
-export default function DeleteCourseModal({
+export default function ResetProgressModal({
   isOpen,
   onClose,
   onConfirm,
   courseName,
-}: DeleteCourseModalProps) {
+}: ResetProgressModalProps) {
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -47,13 +47,13 @@ export default function DeleteCourseModal({
                   as="h3"
                   className="text-lg font-medium leading-6 text-gray-900"
                 >
-                  Удалить курс
+                  Сбросить прогресс
                 </Dialog.Title>
 
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
-                    Вы уверены, что хотите удалить курс «{courseName}»? Прогресс
-                    будет потерян.
+                    Вы уверены, что хотите сбросить весь прогресс по курсу «
+                    {courseName}»? Это действие нельзя отменить.
                   </p>
                 </div>
 
@@ -67,13 +67,13 @@ export default function DeleteCourseModal({
                   </button>
                   <button
                     type="button"
-                    className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none"
+                    className="inline-flex justify-center rounded-md border border-transparent bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 focus:outline-none"
                     onClick={() => {
                       onConfirm();
                       onClose();
                     }}
                   >
-                    Удалить
+                    Сбросить прогресс
                   </button>
                 </div>
               </Dialog.Panel>

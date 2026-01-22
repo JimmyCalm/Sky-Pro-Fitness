@@ -1,9 +1,9 @@
 import { AxiosError } from 'axios';
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function getErrorMessage(error: unknown): string {
@@ -14,7 +14,7 @@ export function getErrorMessage(error: unknown): string {
     if (status === 401) return 'Сессия истекла. Пожалуйста, войдите заново.';
     if (status === 403) return 'Доступ запрещён.';
     if (status === 429) return 'Слишком много запросов. Попробуйте позже.';
-    
+
     if (typeof serverMessage === 'string') {
       return serverMessage;
     }
