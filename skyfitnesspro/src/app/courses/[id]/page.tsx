@@ -79,57 +79,58 @@ export default function CoursePage() {
 
   return (
     <main className="min-h-screen bg-white">
-      {/* Большой баннер */}
-      <div className="relative mx-auto w-full max-w-[1160px] h-[310px] overflow-hidden rounded-[30px]">
-        <Image
-          src={bigImageSrc}
-          alt={course.nameRU}
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+  {/* Большой баннер — уже в пределах 1160px */}
+  <div className="relative mx-auto w-full max-w-[1160px] h-[310px] overflow-hidden rounded-[30px]">
+    <Image
+      src={bigImageSrc}
+      alt={course.nameRU}
+      fill
+      className="object-cover"
+      priority
+    />
+    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+  </div>
+
+  {/* Всё остальное — строго в 1160px, без боковых отступов на десктопе */}
+  <div className="mx-auto w-full max-w-[1160px] px-4 sm:px-6 lg:px-0 py-12 md:py-16">
+
+    {/* Подойдёт для вас, если: */}
+    <section className="mt-12 mb-16">
+      <h2 className="text-4xl font-bold mb-10">Подойдёт для вас, если:</h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {course.fitting?.map((item: string, index: number) => (
+          <div
+            key={index}
+            className="bg-gray-900 text-white rounded-2xl p-8 flex items-start gap-6 h-[141px] w-full max-w-[368px]"
+          >
+            <span className="text-[75px] font-medium leading-none text-[#BCEC30]">
+              {index + 1}
+            </span>
+            <p className="text-lg leading-relaxed mt-[-15px]">{item}</p>
+          </div>
+        ))}
       </div>
+    </section>
 
-      <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 md:py-16">
+    {/* Направления */}
+    <section className="mb-20">
+      <h2 className="text-4xl font-bold mb-8">Направления</h2>
 
-        {/* Подойдёт для вас, если: */}
-        <section className="mt-12 mb-16 max-w-[1160px] mx-auto">
-          <h2 className="text-4xl font-bold mb-10">Подойдёт для вас, если:</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {course.fitting?.map((item: string, index: number) => (
-              <div
-                key={index}
-                className="bg-gray-900 text-white rounded-2xl p-8 flex items-start gap-6 h-[141px] w-full max-w-[368px]"
-              >
-                <span className="text-[75px] font-medium leading-none text-[#BCEC30]">
-                  {index + 1}
-                </span>
-                <p className="text-lg leading-relaxed mt-[-15px]">{item}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Направления */}
-        <section className="mb-20 max-w-[1160px] mx-auto">
-          <h2 className="text-4xl font-bold mb-8">Направления</h2>
-
-          <div className="bg-[#BCEC30] rounded-2xl p-8 h-[146px] flex items-center">
-            <div className="grid grid-cols-3 gap-4 w-full">
-              {course.directions?.map((dir: string, index: number) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-3  px-5 py-3 rounded-full text-black font-medium text-base"
-                >
-                  <Image src="/star.png" alt="Звезда" width={24} height={24} />
-                  {dir}
-                </div>
-              ))}
+      <div className="bg-[#BCEC30] rounded-2xl p-8 h-[146px] flex items-center">
+        <div className="grid grid-cols-3 gap-4 w-full">
+          {course.directions?.map((dir: string, index: number) => (
+            <div
+              key={index}
+              className="flex items-center gap-3 px-5 py-3 rounded-full text-black font-medium text-base"
+            >
+              <Image src="/star.png" alt="Звезда" width={24} height={24} />
+              {dir}
             </div>
-          </div>
-        </section>
+          ))}
+        </div>
+      </div>
+    </section>
 
         {/* Мотивационный блок — только если курс НЕ добавлен */}
         {(!isAuthenticated || !isCourseAdded) && (
