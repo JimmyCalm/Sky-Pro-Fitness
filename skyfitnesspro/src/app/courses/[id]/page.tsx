@@ -27,15 +27,18 @@ export default function CoursePage() {
   };
 
   // Загружаем курс
-  const { data: course, error, isLoading } = useSWR(
-    id ? `/courses/${id}` : null,
-    (url) => api.get(url).then(res => res.data)
+  const {
+    data: course,
+    error,
+    isLoading,
+  } = useSWR(id ? `/courses/${id}` : null, (url) =>
+    api.get(url).then((res) => res.data)
   );
 
   // Данные пользователя
   const { data: userData, mutate: mutateUser } = useSWR(
     isAuthenticated ? '/users/me' : null,
-    () => api.get('/users/me').then(res => res.data.user ?? res.data)
+    () => api.get('/users/me').then((res) => res.data.user ?? res.data)
   );
 
   const isCourseAdded = userData?.selectedCourses?.includes(id);
@@ -56,7 +59,10 @@ export default function CoursePage() {
     }
   };
 
-  if (isLoading) return <div className="min-h-screen grid place-items-center">Загрузка...</div>;
+  if (isLoading)
+    return (
+      <div className="min-h-screen grid place-items-center">Загрузка...</div>
+    );
 
   if (error || !course) {
     return (
@@ -66,12 +72,15 @@ export default function CoursePage() {
     );
   }
 
-  const bigImageSrc = courseBigImageMap[course.nameRU] || courseBigImageMap[course.nameEN] || '/placeholder-course-big.png';
+  const bigImageSrc =
+    courseBigImageMap[course.nameRU] ||
+    courseBigImageMap[course.nameEN] ||
+    '/placeholder-course-big.png';
 
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Большой баннер */}
-      <div className="relative h-[500px] md:h-[600px] overflow-hidden rounded-b-3xl">
+      <div className="relative mx-auto w-full max-w-[1160px] h-[310px] overflow-hidden rounded-[30px]">
         <Image
           src={bigImageSrc}
           alt={course.nameRU}
@@ -81,45 +90,55 @@ export default function CoursePage() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
-        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 text-white">
-          <h1 className="text-5xl md:text-7xl font-bold">{course.nameRU}</h1>
+        <div className="absolute bottom-8 left-8 right-8 text-white">
+          <h1 className="text-5xl md:text-6xl font-bold">{course.nameRU}</h1>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 md:py-16">
         {/* Хлебные крошки */}
-        <Link href="/" className="text-blue-600 hover:underline mb-8 inline-block font-medium">
+        <Link
+          href="/"
+          className="text-blue-600 hover:underline mb-8 inline-block font-medium"
+        >
           ← На главную
         </Link>
 
         {/* Подойдёт для вас, если: */}
-        <section className="mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">Подойдёт для вас, если:</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <section className="mt-12 mb-16 max-w-[1160px] mx-auto">
+          <h2 className="text-4xl font-bold mb-10">Подойдёт для вас, если:</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {course.fitting?.map((item: string, index: number) => (
               <div
                 key={index}
-                className="bg-gray-900 text-white p-6 md:p-8 rounded-2xl shadow-lg"
+                className="bg-gray-900 text-white rounded-2xl p-8 flex items-start gap-6 h-[141px] w-full max-w-[368px]"
               >
-                <p className="text-lg md:text-xl leading-relaxed">{item}</p>
+                <span className="text-[75px] font-medium leading-none text-white">
+                  {index + 1}
+                </span>
+                <p className="text-lg leading-relaxed mt-3">{item}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* Направления */}
-        <section className="mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">Направления</h2>
-          <div className="flex flex-wrap gap-3">
-            {course.directions?.map((dir: string, index: number) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 bg-green-500/10 px-5 py-2.5 rounded-full text-green-700 font-medium"
-              >
-                <Image src="/star.png" alt="Звезда" width={20} height={20} />
-                {dir}
-              </div>
-            ))}
+        <section className="mb-20 max-w-[1160px] mx-auto">
+          <h2 className="text-4xl font-bold mb-8">Направления</h2>
+
+          <div className="bg-[#BCEC30] rounded-2xl p-8 h-[146px] flex items-center">
+            <div className="grid grid-cols-3 gap-4 w-full">
+              {course.directions?.map((dir: string, index: number) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-3 bg-white/20 px-5 py-3 rounded-full text-black font-medium text-base"
+                >
+                  <Image src="/star.png" alt="Звезда" width={24} height={24} />
+                  {dir}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -139,8 +158,7 @@ export default function CoursePage() {
               <div>
                 <h2 className="text-4xl md:text-5xl font-bold mb-8 leading-tight">
                   Начните путь
-                  <br />
-                  к новому телу
+                  <br />к новому телу
                 </h2>
 
                 <ul className="space-y-4 text-lg md:text-xl opacity-90">
