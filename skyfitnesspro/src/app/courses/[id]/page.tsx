@@ -92,13 +92,6 @@ export default function CoursePage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 md:py-16">
-        {/* Хлебные крошки */}
-        <Link
-          href="/"
-          className="text-blue-600 hover:underline mb-8 inline-block font-medium"
-        >
-          ← На главную
-        </Link>
 
         {/* Подойдёт для вас, если: */}
         <section className="mt-12 mb-16 max-w-[1160px] mx-auto">
