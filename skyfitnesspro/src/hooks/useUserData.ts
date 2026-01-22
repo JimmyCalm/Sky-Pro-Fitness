@@ -5,7 +5,7 @@ import api from '@/lib/api';
 import { User, CourseProgress } from '@/lib/types';
 import { getErrorMessage } from '@/lib/utils';
 
-const fetcher = (url: string) => api.get(url).then(res => res.data);
+const fetcher = (url: string) => api.get(url).then((res) => res.data);
 
 export function useUserProfile() {
   const {
@@ -29,7 +29,10 @@ export function useUserProfile() {
     user,
     progress: progress ?? [],
     isLoading: userLoading || progressLoading,
-    error: userError || progressError ? getErrorMessage(userError || progressError) : null,
+    error:
+      userError || progressError
+        ? getErrorMessage(userError || progressError)
+        : null,
     mutateUser,
   };
 }

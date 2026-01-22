@@ -24,7 +24,7 @@ describe('useAuth', () => {
   it('изначально не авторизован, если нет токена', async () => {
     // Мокаем запрос, который выполнится при загрузке пользователя
     mockedApi.get.mockRejectedValueOnce(new Error('Not authenticated'));
-    
+
     const { result } = renderHook(() => useAuth());
 
     // Ждём завершения начальной загрузки
@@ -72,7 +72,7 @@ describe('useAuth', () => {
 
   it('выход очищает токен и состояние', async () => {
     localStorage.setItem('token', 'fake-token');
-    
+
     // Мокаем успешный запрос за пользователем для начальной загрузки
     mockedApi.get.mockResolvedValueOnce({
       data: { email: 'test@example.com' },

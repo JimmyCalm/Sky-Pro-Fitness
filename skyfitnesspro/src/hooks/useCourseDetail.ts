@@ -5,14 +5,21 @@ import api from '@/lib/api';
 import { Course, Workout, CourseProgress, WorkoutProgress } from '@/lib/types';
 import { getErrorMessage } from '@/lib/utils';
 
-const courseFetcher = (url: string) => api.get(url).then(res => res.data);
-const workoutsFetcher = (url: string) => 
-  api.get(url).then(res => res.data).catch(() => []);
-const progressFetcher = (courseId: string) => 
-  api.get(`/users/me/progress?courseId=${courseId}`).then(res => res.data).catch(() => null);
+const courseFetcher = (url: string) => api.get(url).then((res) => res.data);
+const workoutsFetcher = (url: string) =>
+  api
+    .get(url)
+    .then((res) => res.data)
+    .catch(() => []);
+const progressFetcher = (courseId: string) =>
+  api
+    .get(`/users/me/progress?courseId=${courseId}`)
+    .then((res) => res.data)
+    .catch(() => null);
 
 export function useCourseDetail(courseId: string) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const {
     data: course,
@@ -45,12 +52,18 @@ export function useCourseDetail(courseId: string) {
   );
 
   const completedWorkouts =
-    progress?.workoutsProgress?.filter((w: WorkoutProgress) => w.workoutCompleted).length ?? 0;
+    progress?.workoutsProgress?.filter(
+      (w: WorkoutProgress) => w.workoutCompleted
+    ).length ?? 0;
   const totalWorkouts = workouts?.length || course?.workouts?.length || 0;
-  const progressPercent = totalWorkouts > 0 ? Math.round((completedWorkouts / totalWorkouts) * 100) : 0;
+  const progressPercent =
+    totalWorkouts > 0
+      ? Math.round((completedWorkouts / totalWorkouts) * 100)
+      : 0;
 
-  const isLoading = courseLoading || workoutsLoading || (token ? progressLoading : false);
-  
+  const isLoading =
+    courseLoading || workoutsLoading || (token ? progressLoading : false);
+
   // Только ошибки курса считаются критичными
   const error = courseError ? getErrorMessage(courseError) : null;
 

@@ -47,7 +47,9 @@ export default function RegisterPage() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-lime focus:border-transparent"
             />
             {errors.email && (
-              <p className="mt-1.5 text-sm text-red-600">{errors.email.message}</p>
+              <p className="mt-1.5 text-sm text-red-600">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -59,7 +61,9 @@ export default function RegisterPage() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-lime focus:border-transparent"
             />
             {errors.password && (
-              <p className="mt-1.5 text-sm text-red-600">{errors.password.message}</p>
+              <p className="mt-1.5 text-sm text-red-600">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
@@ -69,9 +73,11 @@ export default function RegisterPage() {
             className={`
               w-full py-3.5 rounded-full font-medium text-lg
               transition-all duration-200
-              ${isLoading 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-[#BCEC30] hover:bg-[#BCEC30]/90 active:bg-[#BCEC30]/80'}
+              ${
+                isLoading
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-[#BCEC30] hover:bg-[#BCEC30]/90 active:bg-[#BCEC30]/80'
+              }
               text-primary
             `}
           >
@@ -80,7 +86,10 @@ export default function RegisterPage() {
 
           <p className="mt-6 text-center text-gray-600">
             Уже есть аккаунт?{' '}
-            <Link href="/login" className="text-blue-600 hover:underline font-medium">
+            <Link
+              href="/login"
+              className="text-blue-600 hover:underline font-medium"
+            >
               Войти
             </Link>
           </p>

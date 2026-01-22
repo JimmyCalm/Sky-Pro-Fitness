@@ -2,32 +2,46 @@
 
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useCourses } from '@/hooks/useCourses';
-import { cn } from '@/lib/utils';
 import api from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils';
-import { useState } from 'react';
-import useSWR from 'swr';
 import { User } from '@/lib/types';
-import toast from 'react-hot-toast';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+import useSWR from 'swr';
 
 export default function HomePage() {
   const { courses, isLoading, error } = useCourses();
   const { isAuthenticated } = useAuthContext();
 
+  const courseImageMap: Record<string, string> = {
+    Йога: '/yoga.png',
+    Стретчинг: '/stretching.png',
+    Фитнес: '/fitness.png',
+    'Степ-аэробика': '/step-aerobics.png',
+    Бодифлекс: '/bodyflex.png',
+    // английские названия на случай, если в данных они будут на английском
+    Yoga: '/yoga.png',
+    Stretching: '/stretching.png',
+    Fitness: '/fitness.png',
+  };
+
+  const difficultyIconMap: Record<string, string> = {
+    начальный: '/difficulty-easy.svg',
+    лёгкий: '/difficulty-easy.svg',
+    средний: '/difficulty-medium.svg',
+    сложный: '/difficulty-hard.svg',
+    тяжёлый: '/difficulty-hard.svg',
+  };
+
   // Проверяем токен перед запросом /users/me
-  const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const { mutate: mutateUser } = useSWR<User>(
-    token ? '/users/me' : null, // ← только если есть токен
-    () =>
-      api.get('/users/me').then((res) => {
-        const data = res.data;
-        return data.user ? data.user : data;
-      }),
-    { revalidateOnFocus: false }
+    token ? '/users/me' : null,
+    () => api.get('/users/me').then(res => res.data.user ?? res.data),
+    { revalidateOnFocus: false },
   );
 
   const [addingCourseId, setAddingCourseId] = useState<string | null>(null);
@@ -42,8 +56,8 @@ export default function HomePage() {
 
     try {
       await api.post('/users/me/courses', { courseId });
-      await mutateUser?.(); // безопасно, если mutateUser существует
-      toast.success('Курс успешно добавлен в ваш профиль!');
+      mutateUser?.();
+      toast.success('Курс успешно добавлен!');
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {
@@ -69,95 +83,111 @@ export default function HomePage() {
 
   return (
     <main className="py-12 px-4">
-      <div className=" flex mb-10">
-        <h1 className="text-[black] md:text-[60px] font-medium text-start mb-10">
-        Начните заниматься спортом и улучшите качество жизни
-      </h1>
-      <Image
-          src="/banner.png"
-          alt="Баннер"
-          width={288}
-          height={120}
-          className="mt-4 rounded-xl"
-        />
+      {/* Заголовок + баннер-облачко */}
+      <div className="mb-12 md:mb-16 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-gray-900">
+          Начните заниматься спортом
+          <br className="hidden sm:block" />
+          и улучшите качество жизни
+        </h1>
+
+        <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md">
+          <Image
+            src="/banner.png"
+            alt="Измени своё тело за полгода!"
+            width={400}
+            height={150}
+            className="w-full h-auto"
+            priority
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {courses.map((course) => (
-          <Link
-            key={course._id}
-            href={`/courses/${course._id}`}
-            className="group relative block bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full"
-          >
-            {/* Иконка + в правом верхнем углу */}
-            <div className="absolute top-4 right-4 z-10">
+      {/* Сетка курсов */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        {courses.map(course => {
+          const imageSrc = courseImageMap[course.nameRU] || '/placeholder-course.png';
+          const diffKey = (course.difficulty || 'начальный').toLowerCase();
+          const difficultyIcon = difficultyIconMap[diffKey] || '/difficulty-easy.svg';
+
+          const minMin = course.dailyDurationInMinutes?.from ?? 20;
+          const maxMin = course.dailyDurationInMinutes?.to ?? 50;
+
+          return (
+            <Link
+              key={course._id}
+              href={`/courses/${course._id}`}
+              className="group relative aspect-[3/4] overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500"
+            >
+              <Image
+                src={imageSrc}
+                alt={course.nameRU || 'Курс'}
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                priority={courses.indexOf(course) < 4} // оптимизация LCP
+              />
+
+              {/* Градиентное затемнение */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+
+              {/* Кнопка добавления */}
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   e.stopPropagation();
                   handleSelectCourse(course._id);
                 }}
-                className="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-[#00C1FF] hover:bg-[#00C1FF] hover:text-white transition"
-              >
-                <span className="text-2xl font-bold">+</span>
-              </button>
-            </div>
-
-            <div className="p-6 flex-grow">
-              <h3 className="text-xl font-bold mb-3 text-gray-900">
-                {course.nameRU || course.nameEN}
-              </h3>
-              <p className="text-gray-600 mb-4 line-clamp-3">
-                {course.description}
-              </p>
-
-              <div className="flex flex-wrap gap-2 mb-4">
-                {course.directions?.map((dir, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-block px-3 py-1 bg-[#00C1FF]/10 text-[#00C1FF] text-sm rounded-full"
-                  >
-                    {dir}
-                  </span>
-                ))}
-              </div>
-
-              {course.difficulty && (
-                <p className="text-sm text-gray-500">
-                  Сложность:{' '}
-                  <span className="font-medium">{course.difficulty}</span>
-                </p>
-              )}
-            </div>
-
-            <div className="p-6 pt-0 mt-auto">
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSelectCourse(course._id);
-                }}
+                className="absolute top-5 right-5 z-20 transition-transform hover:scale-110"
                 disabled={addingCourseId === course._id}
-                className={cn(
-                  'w-full py-3 rounded-full font-medium transition-all shadow-md',
-                  addingCourseId === course._id
-                    ? 'bg-gray-300 cursor-not-allowed text-gray-700'
-                    : 'bg-[#00C1FF] hover:bg-[#00A1E0] text-white'
-                )}
               >
-                {addingCourseId === course._id
-                  ? 'Добавляем...'
-                  : 'Выбрать курс'}
+                <Image
+                  src="/addCourse.svg"
+                  alt="Добавить курс"
+                  width={52}
+                  height={52}
+                  className={addingCourseId === course._id ? 'opacity-50' : ''}
+                />
               </button>
-            </div>
-          </Link>
-        ))}
+
+              {/* Нижняя информация */}
+              <div className="absolute bottom-6 left-6 right-6 z-10 text-white">
+                <h3 className="text-2xl sm:text-3xl font-bold mb-3 drop-shadow-md">
+                  {course.nameRU}
+                </h3>
+
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm sm:text-base font-medium">
+                  <div className="flex items-center gap-2.5">
+                    <Image src="/days.svg" alt="" width={22} height={22} />
+                    <span>{course.durationInDays || 25} дней</span>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    <Image src="/time.svg" alt="" width={22} height={22} />
+                    <span>
+                      {minMin}–{maxMin} мин/день
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    <Image src={difficultyIcon} alt="Сложность" width={90} height={28} />
+                  </div>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
 
-      <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="fixed bottom-6 right-6 bg-[#00C1FF] text-white p-4 rounded-full shadow-lg">Наверх ↑</button>
+      {/* Кнопка наверх */}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#00C1FF] text-white text-2xl shadow-xl hover:bg-[#0099d9] transition-colors"
+      >
+        ↑
+      </button>
 
       {courses.length === 0 && !isLoading && (
-        <p className="text-center text-gray-500 text-xl mt-12">
+        <p className="text-center text-gray-500 text-xl mt-16">
           Курсы пока отсутствуют
         </p>
       )}

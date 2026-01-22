@@ -15,16 +15,32 @@ import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
   const { user: authUser, isLoading: authLoading } = useAuthContext();
-  const { selectedCourses, isLoading: coursesLoading, error: coursesError, mutateUser } = useSelectedCourses();
-  const { courseProgress, isLoading: progressLoading, error: progressError, mutateProgress } = useProgress();
+  const {
+    selectedCourses,
+    isLoading: coursesLoading,
+    error: coursesError,
+    mutateUser,
+  } = useSelectedCourses();
+  const {
+    courseProgress,
+    isLoading: progressLoading,
+    error: progressError,
+    mutateProgress,
+  } = useProgress();
 
   // Для удаления курса
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [courseToDelete, setCourseToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [courseToDelete, setCourseToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   // Для сброса прогресса
   const [resetModalOpen, setResetModalOpen] = useState(false);
-  const [courseToReset, setCourseToReset] = useState<{ id: string; name: string } | null>(null);
+  const [courseToReset, setCourseToReset] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   const isLoadingOverall = authLoading || coursesLoading || progressLoading;
   const errorOverall = coursesError || progressError;
@@ -50,7 +66,7 @@ export default function ProfilePage() {
     try {
       await api.patch(`/courses/${courseToReset.id}/reset`);
       await mutateProgress(); // обновляем прогресс
-      await mutateUser();     // обновляем пользователя (на всякий случай)
+      await mutateUser(); // обновляем пользователя (на всякий случай)
       toast.success('Прогресс курса успешно сброшен!');
     } catch (err) {
       toast.error(`Ошибка сброса прогресса: ${getErrorMessage(err)}`);
@@ -88,9 +104,15 @@ export default function ProfilePage() {
     <ProtectedRoute>
       <main className="py-10 px-4 max-w-6xl mx-auto">
         <div className="mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">Личный кабинет</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-3">
+            Личный кабинет
+          </h1>
           <p className="text-lg text-gray-600">
-            Добро пожаловать, <span className="font-medium">{displayUser?.email || 'пользователь'}</span>!
+            Добро пожаловать,{' '}
+            <span className="font-medium">
+              {displayUser?.email || 'пользователь'}
+            </span>
+            !
           </p>
         </div>
 
@@ -99,7 +121,9 @@ export default function ProfilePage() {
 
           {selectedCourses.length === 0 ? (
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-10 text-center">
-              <p className="text-xl text-gray-600 mb-6">У вас пока нет выбранных курсов</p>
+              <p className="text-xl text-gray-600 mb-6">
+                У вас пока нет выбранных курсов
+              </p>
               <Link
                 href="/"
                 className="inline-block bg-[#00C1FF] text-white px-8 py-3 rounded-full font-medium hover:bg-[#00A1E0] transition-colors"
@@ -109,11 +133,17 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {selectedCourses.map(course => {
-                const courseProg = courseProgress.find(cp => cp.courseId === course._id);
-                const completed = courseProg?.workoutsProgress?.filter(wp => wp.workoutCompleted).length ?? 0;
+              {selectedCourses.map((course) => {
+                const courseProg = courseProgress.find(
+                  (cp) => cp.courseId === course._id
+                );
+                const completed =
+                  courseProg?.workoutsProgress?.filter(
+                    (wp) => wp.workoutCompleted
+                  ).length ?? 0;
                 const total = course.workouts?.length ?? 0;
-                const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+                const percent =
+                  total > 0 ? Math.round((completed / total) * 100) : 0;
 
                 return (
                   <div

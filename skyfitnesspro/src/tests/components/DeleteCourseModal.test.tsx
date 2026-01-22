@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+} from '@testing-library/react';
 import DeleteCourseModal from '@/components/DeleteCourseModal';
 
 describe('DeleteCourseModal', () => {

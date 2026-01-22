@@ -31,11 +31,17 @@ describe('useCourseDetail', () => {
 
     mockedUseSWR.mockImplementation((key) => {
       if (key === `/courses/test-id`) {
-        return { data: { _id: 'test-id', workouts: ['1', '2'] }, error: null, isLoading: false };
+        return {
+          data: { _id: 'test-id', workouts: ['1', '2'] },
+          error: null,
+          isLoading: false,
+        };
       }
       if (key === `/users/me/progress?courseId=test-id`) {
         return {
-          data: { workoutsProgress: [{ workoutId: '1', workoutCompleted: true }] },
+          data: {
+            workoutsProgress: [{ workoutId: '1', workoutCompleted: true }],
+          },
           error: null,
           isLoading: false,
         };

@@ -9,14 +9,18 @@ export const metadata: Metadata = {
   description: 'Онлайн-тренировки для занятий дома',
 };
 
-export default function RootLayout({children}: {children: React.ReactNode}) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="ru">
       <body className="container mx-auto  max-w-[1160px]">
         <AuthProvider>
-        <Header />
-        {children}
-        <Toaster 
+          <Header />
+          {children}
+          <Toaster
             position="top-right"
             toastOptions={{
               duration: 4000,

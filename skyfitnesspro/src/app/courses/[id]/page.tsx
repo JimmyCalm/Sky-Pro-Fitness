@@ -33,11 +33,14 @@ export default function CourseDetailPage() {
   const isAdded = isAuthenticated && progress !== undefined;
 
   // Сортируем тренировки по порядку в course.workouts
-  const sortedWorkouts = workouts?.slice().sort((a, b) => {
-    const indexA = course?.workouts?.indexOf(a._id) ?? Number.MAX_SAFE_INTEGER;
-    const indexB = course?.workouts?.indexOf(b._id) ?? Number.MAX_SAFE_INTEGER;
-    return indexA - indexB;
-  }) ?? [];
+  const sortedWorkouts =
+    workouts?.slice().sort((a, b) => {
+      const indexA =
+        course?.workouts?.indexOf(a._id) ?? Number.MAX_SAFE_INTEGER;
+      const indexB =
+        course?.workouts?.indexOf(b._id) ?? Number.MAX_SAFE_INTEGER;
+      return indexA - indexB;
+    }) ?? [];
 
   const nextWorkoutId = (() => {
     if (sortedWorkouts.length === 0) return null;
@@ -79,7 +82,9 @@ export default function CourseDetailPage() {
   if (error || !course) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-red-600 gap-6 bg-gray-50">
-        <p className="text-2xl font-medium">Курс не найден или произошла ошибка</p>
+        <p className="text-2xl font-medium">
+          Курс не найден или произошла ошибка
+        </p>
         <Link
           href="/"
           className="px-8 py-3 bg-[#00C1FF] text-white rounded-full hover:bg-[#00A1E0] font-medium"
@@ -93,7 +98,10 @@ export default function CourseDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="py-10 px-4 max-w-6xl mx-auto">
-        <Link href="/" className="text-blue-600 hover:underline mb-6 inline-block font-medium">
+        <Link
+          href="/"
+          className="text-blue-600 hover:underline mb-6 inline-block font-medium"
+        >
           ← На главную
         </Link>
 
@@ -102,17 +110,25 @@ export default function CourseDetailPage() {
             {course.nameRU || course.nameEN}
           </h1>
 
-          <p className="text-gray-700 mb-8 leading-relaxed">{course.description}</p>
+          <p className="text-gray-700 mb-8 leading-relaxed">
+            {course.description}
+          </p>
 
           {/* Теги */}
           <div className="flex flex-wrap gap-3 mb-8">
             {course.directions?.map((dir, i) => (
-              <span key={i} className="px-4 py-1 bg-[#00C1FF]/10 text-[#00C1FF] rounded-full text-sm font-medium">
+              <span
+                key={i}
+                className="px-4 py-1 bg-[#00C1FF]/10 text-[#00C1FF] rounded-full text-sm font-medium"
+              >
                 {dir}
               </span>
             ))}
             {course.fitting?.map((fit, i) => (
-              <span key={i} className="px-4 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+              <span
+                key={i}
+                className="px-4 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+              >
                 {fit}
               </span>
             ))}
@@ -122,21 +138,28 @@ export default function CourseDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
             {course.difficulty && (
               <div className="bg-gray-50 p-4 rounded-xl">
-                <span className="block text-sm text-gray-500 mb-1">Сложность</span>
+                <span className="block text-sm text-gray-500 mb-1">
+                  Сложность
+                </span>
                 <p className="font-medium text-gray-900">{course.difficulty}</p>
               </div>
             )}
             {course.durationInDays && (
               <div className="bg-gray-50 p-4 rounded-xl">
-                <span className="block text-sm text-gray-500 mb-1">Длительность</span>
-                <p className="font-medium text-gray-900">{course.durationInDays} дней</p>
+                <span className="block text-sm text-gray-500 mb-1">
+                  Длительность
+                </span>
+                <p className="font-medium text-gray-900">
+                  {course.durationInDays} дней
+                </p>
               </div>
             )}
             {course.dailyDurationInMinutes && (
               <div className="bg-gray-50 p-4 rounded-xl">
                 <span className="block text-sm text-gray-500 mb-1">В день</span>
                 <p className="font-medium text-gray-900">
-                  {course.dailyDurationInMinutes.from}–{course.dailyDurationInMinutes.to} мин
+                  {course.dailyDurationInMinutes.from}–
+                  {course.dailyDurationInMinutes.to} мин
                 </p>
               </div>
             )}
@@ -146,7 +169,9 @@ export default function CourseDetailPage() {
           {isAuthenticated && isAdded && (
             <div className="mb-10 bg-gradient-to-r from-[#00C1FF]/5 to-[#00C1FF]/10 rounded-xl p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-lg text-gray-900">Ваш прогресс</h3>
+                <h3 className="font-semibold text-lg text-gray-900">
+                  Ваш прогресс
+                </h3>
                 <span className="text-sm font-medium text-gray-700">
                   {completedWorkouts}/{totalWorkouts} • {progressPercent}%
                 </span>
@@ -166,7 +191,12 @@ export default function CourseDetailPage() {
             {isAuthenticated ? (
               isAdded ? (
                 <button
-                  onClick={() => nextWorkoutId && router.push(`/workouts/${nextWorkoutId}?courseId=${courseId}`)}
+                  onClick={() =>
+                    nextWorkoutId &&
+                    router.push(
+                      `/workouts/${nextWorkoutId}?courseId=${courseId}`
+                    )
+                  }
                   disabled={!nextWorkoutId}
                   className={cn(
                     'flex-1 py-4 rounded-full font-medium text-lg transition-all shadow-md',
@@ -200,7 +230,7 @@ export default function CourseDetailPage() {
         <h2 className="text-2xl font-semibold mb-6">Тренировки в курсе</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {sortedWorkouts.map(workout => {
+          {sortedWorkouts.map((workout) => {
             const workoutProgress = progress?.workoutsProgress?.find(
               (wp: WorkoutProgress) => wp.workoutId === workout._id
             );
