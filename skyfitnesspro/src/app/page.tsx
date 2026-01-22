@@ -163,14 +163,17 @@ export default function HomePage() {
         })}
       </div>
 
-      {/* Кнопка Наверх — как в макете */}
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-6 py-3 rounded-full bg-[#BCEC30] text-primary font-medium text-base shadow-xl hover:bg-[#a3d32a] transition-colors"
-      >
-        Наверх
-        <span className="text-lg">↑</span>
-      </button>
+      {courses.length > 0 && (
+        <div className="flex justify-center mt-10 md:mt-16">
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex items-center gap-2 px-8 py-4 rounded-full bg-[#BCEC30] text-primary font-medium text-base shadow-lg hover:bg-[#a3d32a] hover:shadow-xl transition-all duration-300"
+          >
+            Наверх
+            <span className="text-lg font-bold">↑</span>
+          </button>
+        </div>
+      )}
 
       {courses.length === 0 && !isLoading && (
         <p className="text-center text-gray-500 text-xl mt-16">Курсы пока отсутствуют</p>
