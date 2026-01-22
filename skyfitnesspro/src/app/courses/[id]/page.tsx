@@ -140,7 +140,7 @@ export default function CoursePage() {
 
         {/* Мотивационный блок — только если курс НЕ добавлен */}
         {(!isAuthenticated || !isCourseAdded) && (
-          <section className="relative mx-auto mt-16 md:mt-24 w-full max-w-[1160px] h-[486px]  rounded-3xl bg-white text-black">
+          <section className="relative mx-auto mt-16 md:mt-24 w-full max-w-[1160px] h-[486px]  rounded-3xl bg-white text-black shadow-lg" >
             {/* Фон */}
             <div className="absolute inset-0">
               <Image
@@ -150,7 +150,7 @@ export default function CoursePage() {
                 className="object-cover"
               />
               {/* Лёгкое затемнение для читаемости текста */}
-              <div className="absolute inset-0 bg-black/40" />
+              <div className="absolute inset-0 " />
             </div>
 
             {/* Контент */}
@@ -172,7 +172,7 @@ export default function CoursePage() {
 
                 <button
                   onClick={handleAddCourse}
-                  className="mt-10 bg-[#BCEC30] text-black px-10 py-5 rounded-full font-bold text-lg hover:bg-[#a3d32a] transition shadow-lg"
+                  className="mt-10 bg-[#BCEC30] text-black px-10 py-5 rounded-full font-bold text-lg hover:bg-[#a3d32a] transition shadow-lg cursor-pointer"
                 >
                   Войдите, чтобы добавить курс
                 </button>
