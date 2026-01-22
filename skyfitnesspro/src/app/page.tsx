@@ -67,7 +67,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="py-12 px-4">
+    <main className="py-10 md:py-12 px-0">
       {/* Заголовок + облачко */}
       <div className="mb-12 md:mb-16 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-gray-900">
@@ -89,7 +89,7 @@ export default function HomePage() {
       </div>
 
       {/* Карточки */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto justify-items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 justify-items-center">
         {courses.map((course) => {
           const imageSrc = courseImageMap[course.nameRU] || '/placeholder-course.png';
           const days = course.durationInDays ?? 25;

@@ -1,3 +1,4 @@
+// app/layout.tsx
 import { Toaster } from 'react-hot-toast';
 import type { Metadata } from 'next';
 import './globals.css';
@@ -16,33 +17,25 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body className="container mx-auto  max-w-[1160px]">
+      <body className="antialiased">
         <AuthProvider>
-          <Header />
-          {children}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                borderRadius: '10px',
-                background: '#333',
-                color: '#fff',
-              },
-              success: {
+          <div className="mx-auto w-full max-w-[1160px]">
+            <Header />
+            <main className="px-4 sm:px-6 lg:px-0">{children}</main>
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
                 style: {
-                  background: '#10B981',
-                  color: 'white',
+                  borderRadius: '10px',
+                  background: '#333',
+                  color: '#fff',
                 },
-              },
-              error: {
-                style: {
-                  background: '#EF4444',
-                  color: 'white',
-                },
-              },
-            }}
-          />
+                success: { style: { background: '#10B981', color: 'white' } },
+                error:   { style: { background: '#EF4444', color: 'white' } },
+              }}
+            />
+          </div>
         </AuthProvider>
       </body>
     </html>
