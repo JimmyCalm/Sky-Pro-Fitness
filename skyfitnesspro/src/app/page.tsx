@@ -36,12 +36,13 @@ export default function HomePage() {
   };
 
   // Проверяем токен перед запросом /users/me
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const { mutate: mutateUser } = useSWR<User>(
     token ? '/users/me' : null,
-    () => api.get('/users/me').then(res => res.data.user ?? res.data),
-    { revalidateOnFocus: false },
+    () => api.get('/users/me').then((res) => res.data.user ?? res.data),
+    { revalidateOnFocus: false }
   );
 
   const [addingCourseId, setAddingCourseId] = useState<string | null>(null);
@@ -87,8 +88,7 @@ export default function HomePage() {
       <div className="mb-12 md:mb-16 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-gray-900">
           Начните заниматься спортом
-          <br className="hidden sm:block" />
-          и улучшите качество жизни
+          <br className="hidden sm:block" />и улучшите качество жизни
         </h1>
 
         <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md">
@@ -105,72 +105,123 @@ export default function HomePage() {
 
       {/* Сетка курсов */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
-        {courses.map(course => {
-          const imageSrc = courseImageMap[course.nameRU] || '/placeholder-course.png';
-          const diffKey = (course.difficulty || 'начальный').toLowerCase();
-          const difficultyIcon = difficultyIconMap[diffKey] || '/difficulty-easy.svg';
+        {courses.map((course) => {
+          const imageSrc =
+            courseImageMap[course.nameRU] || '/placeholder-course.png';
 
           const minMin = course.dailyDurationInMinutes?.from ?? 20;
           const maxMin = course.dailyDurationInMinutes?.to ?? 50;
+          const days = course.durationInDays ?? 25;
+
+          // Определяем уровень сложности вручную (можно потом заменить на course.difficulty)
+          let difficultyLevel: 'easy' | 'medium' | 'hard' = 'medium';
+          const nameLower = (course.nameRU || '').toLowerCase();
+
+          if (
+            nameLower.includes('йога') ||
+            nameLower.includes('стретчинг') ||
+            nameLower.includes('йога')
+          ) {
+            difficultyLevel = 'easy';
+          } else if (
+            nameLower.includes('степ') ||
+            nameLower.includes('фитнес') ||
+            nameLower.includes('аэробика')
+          ) {
+            difficultyLevel = 'medium';
+          } else if (
+            nameLower.includes('бодифлекс') ||
+            nameLower.includes('bodyflex')
+          ) {
+            difficultyLevel = 'hard';
+          }
+
+          // Цвета для полос
+          const difficultyClass =
+            difficultyLevel === 'easy'
+              ? 'easy-difficulty'
+              : difficultyLevel === 'hard'
+                ? 'hard-difficulty'
+                : 'medium-difficulty';
 
           return (
             <Link
               key={course._id}
               href={`/courses/${course._id}`}
-              className="group relative aspect-[3/4] overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500"
+              className="group block w-full max-w-[360px] mx-auto overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 bg-white flex flex-col"
             >
-              <Image
-                src={imageSrc}
-                alt={course.nameRU || 'Курс'}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-                priority={courses.indexOf(course) < 4} // оптимизация LCP
-              />
-
-              {/* Градиентное затемнение */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-
-              {/* Кнопка добавления */}
-              <button
-                onClick={e => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSelectCourse(course._id);
-                }}
-                className="absolute top-5 right-5 z-20 transition-transform hover:scale-110"
-                disabled={addingCourseId === course._id}
-              >
+              {/* Картинка — фиксированная высота 325px */}
+              <div className="relative w-full h-[325px] overflow-hidden flex-shrink-0">
                 <Image
-                  src="/addCourse.svg"
-                  alt="Добавить курс"
-                  width={52}
-                  height={52}
-                  className={addingCourseId === course._id ? 'opacity-50' : ''}
+                  src={imageSrc}
+                  alt={course.nameRU || 'Курс'}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  sizes="(max-width: 640px) 100vw, 360px"
+                  priority={courses.indexOf(course) < 4}
                 />
-              </button>
 
-              {/* Нижняя информация */}
-              <div className="absolute bottom-6 left-6 right-6 z-10 text-white">
-                <h3 className="text-2xl sm:text-3xl font-bold mb-3 drop-shadow-md">
+                {/* Плюсик теперь в правом верхнем углу картинки */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSelectCourse(course._id);
+                  }}
+                  className="absolute top-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md hover:bg-[#00C1FF] hover:text-white transition-colors"
+                  disabled={addingCourseId === course._id}
+                >
+                  <Image
+                    src="/addCourse.svg"
+                    alt="Добавить"
+                    width={28}
+                    height={28}
+                    className={
+                      addingCourseId === course._id ? 'opacity-60' : ''
+                    }
+                  />
+                </button>
+              </div>
+
+              {/* Нижняя информационная панель */}
+              <div className="p-5 flex flex-col flex-grow bg-white">
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">
                   {course.nameRU}
                 </h3>
 
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm sm:text-base font-medium">
-                  <div className="flex items-center gap-2.5">
-                    <Image src="/days.svg" alt="" width={22} height={22} />
-                    <span>{course.durationInDays || 25} дней</span>
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-gray-700 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Image src="/days.svg" alt="" width={20} height={20} />
+                    <span>{days} дней</span>
                   </div>
 
-                  <div className="flex items-center gap-2.5">
-                    <Image src="/time.svg" alt="" width={22} height={22} />
+                  <div className="flex items-center gap-2">
+                    <Image src="/time.svg" alt="" width={20} height={20} />
                     <span>
                       {minMin}–{maxMin} мин/день
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2.5">
-                    <Image src={difficultyIcon} alt="Сложность" width={90} height={28} />
+                  <div className="flex items-center gap-2">
+                    <div className={`difficulty-wrapper ${difficultyClass}`}>
+                      <Image
+                        src="/difficulty.svg"
+                        alt="Сложность"
+                        width={100}
+                        height={24}
+                        className="h-6 w-auto"
+                      />
+                    </div>
                   </div>
+                </div>
+
+                {/* Можно добавить индикатор сложности текстом, если хочется */}
+                <div className="text-xs text-gray-500 mt-auto">
+                  {difficultyLevel === 'easy'
+                    ? 'Начальный'
+                    : difficultyLevel === 'hard'
+                      ? 'Сложный'
+                      : 'Средний'}
                 </div>
               </div>
             </Link>
