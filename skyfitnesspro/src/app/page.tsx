@@ -2,124 +2,201 @@
 
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useCourses } from '@/hooks/useCourses';
-import { cn } from '@/lib/utils';
 import api from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils';
-import { useState } from 'react';
-import useSWR from 'swr';
 import { User } from '@/lib/types';
+import DifficultyIcon from '@/components/DifficultyIcon';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+import useSWR from 'swr';
 
 export default function HomePage() {
   const { courses, isLoading, error } = useCourses();
   const { isAuthenticated } = useAuthContext();
-  const { mutate: mutateUser } = useSWR<User>('/users/me', 
-    () => api.get('/users/me').then(res => {
-      const data = res.data;
-      return data.user ? data.user : data;
-    }),
+
+  const courseImageMap: Record<string, string> = {
+    Йога: '/yoga.png',
+    Стретчинг: '/stretching.png',
+    Фитнес: '/fitness.png',
+    'Степ-аэробика': '/step-aerobics.png',
+    Бодифлекс: '/bodyflex.png',
+    Yoga: '/yoga.png',
+    Stretching: '/stretching.png',
+    Fitness: '/fitness.png',
+  };
+
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+  const { mutate: mutateUser } = useSWR<User>(
+    token ? '/users/me' : null,
+    () => api.get('/users/me').then((res) => res.data.user ?? res.data),
     { revalidateOnFocus: false }
   );
+
   const [addingCourseId, setAddingCourseId] = useState<string | null>(null);
-  const [addError, setAddError] = useState<string | null>(null);
 
   const handleSelectCourse = async (courseId: string) => {
     if (!isAuthenticated) {
-      alert('Войдите в аккаунт, чтобы выбрать курс');
+      toast.error('Войдите в аккаунт, чтобы выбрать курс');
       return;
     }
 
     setAddingCourseId(courseId);
-    setAddError(null);
 
     try {
-      await api.post('/users/me/courses', ({ courseId }));
-
-      await mutateUser();
-
-      alert('Курс успешно добавлен в ваш профиль!');
+      await api.post('/users/me/courses', { courseId });
+      mutateUser?.();
+      toast.success('Курс успешно добавлен!');
     } catch (err) {
-      setAddError(getErrorMessage(err));
+      toast.error(getErrorMessage(err));
     } finally {
       setAddingCourseId(null);
     }
   };
 
-  if (isLoading) {
+  if (isLoading)
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <p className="text-xl">Загрузка курсов...</p>
+      <div className="min-h-[60vh] grid place-items-center text-xl">
+        Загрузка курсов...
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
-      <div className="min-h-[60vh] flex items-center justify-center text-red-600">
-        <p>Ошибка загрузки курсов: {error}</p>
+      <div className="min-h-[60vh] grid place-items-center text-red-600">
+        Ошибка загрузки курсов: {error}
       </div>
     );
-  }
 
   return (
-    <main className="py-12 px-4">
-      <h1 className="text-3xl md:text-4xl font-bold text-center mb-10">
-        Доступные курсы
-      </h1>
+    <main className="py-10 md:py-12 px-0">
+      {/* Заголовок + облачко */}
+      <div className="mb-10 md:mb-16 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 md:gap-12">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium leading-tight text-gray-900 tracking-tight">
+          Начните заниматься спортом
+          <br className="hidden sm:block" />и улучшите качество жизни
+        </h1>
 
-      {addError && (
-        <div className="max-w-3xl mx-auto mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-          {addError}
+        <div className="relative max-w-[320px] sm:max-w-[380px] md:max-w-[420px] lg:max-w-[480px] ml-auto md:ml-0">
+          <Image
+            src="/banner.png"
+            alt="Измени своё тело за полгода!"
+            width={480}
+            height={140}
+            className="w-full h-auto object-contain drop-shadow-xl hidden md:block"
+            priority
+          />
         </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {courses.map(course => (
-          <div
-            key={course._id}
-            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col"
-          >
-            <div className="p-6 flex-grow">
-              <h3 className="text-xl font-bold mb-3">{course.nameRU || course.nameEN}</h3>
-              <p className="text-gray-600 mb-4 line-clamp-3">{course.description}</p>
-
-              <div className="flex flex-wrap gap-2 mb-4">
-                {course.directions?.map((dir, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-block px-3 py-1 bg-lime/20 text-lime-800 text-sm rounded-full"
-                  >
-                    {dir}
-                  </span>
-                ))}
-              </div>
-
-              {course.difficulty && (
-                <p className="text-sm text-gray-500">
-                  Сложность: <span className="font-medium">{course.difficulty}</span>
-                </p>
-              )}
-            </div>
-
-            <div className="p-6 pt-0 mt-auto">
-              <button
-                onClick={() => handleSelectCourse(course._id)}
-                disabled={addingCourseId === course._id}
-                className={cn(
-                  "w-full py-3 rounded-full font-medium transition-all",
-                  addingCourseId === course._id
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-lime hover:bg-lime/90 active:bg-lime/80 text-primary"
-                )}
-              >
-                {addingCourseId === course._id ? 'Добавляем...' : 'Выбрать курс'}
-              </button>
-            </div>
-          </div>
-        ))}
       </div>
 
+      {/* Карточки */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 justify-items-center pb-24 md:pb-20">
+        {courses.map((course) => {
+          const imageSrc =
+            courseImageMap[course.nameRU] || '/placeholder-course.png';
+          const days = course.durationInDays ?? 25;
+          const min = course.dailyDurationInMinutes?.from ?? 20;
+          const max = course.dailyDurationInMinutes?.to ?? 50;
+
+          let level: 'easy' | 'medium' | 'hard' = 'medium';
+          const name = (course.nameRU || '').toLowerCase();
+
+          if (name.includes('йога') || name.includes('стретчинг'))
+            level = 'easy';
+          else if (
+            name.includes('степ') ||
+            name.includes('фитнес') ||
+            name.includes('аэробика')
+          )
+            level = 'medium';
+          else if (name.includes('бодифлекс')) level = 'hard';
+
+          return (
+            <Link
+              key={course._id}
+              href={`/courses/${course._id}`}
+              className="group block w-full max-w-[360px] overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 bg-white flex flex-col"
+            >
+              {/* Верхняя часть с картинкой — теперь с закруглением снизу */}
+              <div className="relative w-full h-[325px] flex-shrink-0 overflow-hidden rounded-b-3xl">
+                <Image
+                  src={imageSrc}
+                  alt={course.nameRU || 'Курс'}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  sizes="(max-width: 640px) 100vw, 360px"
+                  priority={courses.indexOf(course) < 4}
+                />
+
+                {/* Плюсик */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSelectCourse(course._id);
+                  }}
+                  className="absolute top-4 right-4 z-20 w-[27px] h-[27px] flex items-center justify-center transition-all duration-500 hover:rotate-180 disabled:opacity-50"
+                  disabled={addingCourseId === course._id}
+                >
+                  <Image
+                    src="/addCourse.svg"
+                    alt="Добавить курс"
+                    width={27}
+                    height={27}
+                    className="w-full h-full"
+                  />
+                </button>
+              </div>
+
+              {/* Информация */}
+              <div className="p-5 flex flex-col flex-grow">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  {course.nameRU}
+                </h3>
+
+                <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-gray-700 mb-4">
+                  <div className="flex items-center gap-2 bg-[#F7F7F7] px-3 py-1 rounded-full">
+                    <Image src="/days.svg" alt="" width={15} height={15} />
+                    <span>{days} дней</span>
+                  </div>
+
+                  <div className="flex items-center gap-2 bg-[#F7F7F7] px-3 py-1 rounded-full">
+                    <Image src="/time.svg" alt="" width={15} height={15} />
+                    <span>
+                      {min}–{max} мин/день
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 bg-[#F7F7F7] px-3 py-1 rounded-full">
+                    <DifficultyIcon level={level} width={18} height={18} />
+                    <div className="text-[14px] text-black-400 mt-auto">
+                      {level === 'easy'
+                        ? 'Начальный'
+                        : level === 'hard'
+                          ? 'Сложный'
+                          : 'Средний'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-6 py-3 rounded-full bg-[#BCEC30] text-primary font-medium text-base shadow-xl hover:bg-[#a3d32a] transition-colors"
+      >
+        Наверх
+        <span className="text-lg">↑</span>
+      </button>
+
       {courses.length === 0 && !isLoading && (
-        <p className="text-center text-gray-500 text-xl mt-12">
+        <p className="text-center text-gray-500 text-xl mt-16">
           Курсы пока отсутствуют
         </p>
       )}

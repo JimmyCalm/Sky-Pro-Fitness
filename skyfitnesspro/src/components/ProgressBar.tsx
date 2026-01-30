@@ -33,10 +33,15 @@ export default function ProgressBar({
           <span className="font-medium">{percentage}%</span>
         </div>
       )}
-      <div className={`w-full bg-gray-200 rounded-full overflow-hidden ${heightClass}`}>
+      <div
+        className={`w-full bg-gray-200 rounded-full overflow-hidden ${heightClass}`}
+      >
         <div
           className="h-full rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${Math.min(percentage, 100)}%`, backgroundColor: color }}
+          style={{
+            width: `${Math.min(percentage, 100)}%`,
+            backgroundColor: color,
+          }}
         />
       </div>
     </div>
